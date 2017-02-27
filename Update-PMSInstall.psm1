@@ -17,12 +17,23 @@ Function Update-PMSInstall{
     Param (
     [Parameter(ValueFromPipelineByPropertyName=$true, Position=0)]
     # Change this to the user name you run Plex Media Server under, or use the parameter and enter a value.
-    $UserName = "$env:USERNAME"
+    $UserName = ""
     )
 
     Try{
+        New-PSDrive HKCU -PSProvider Registry -Root Registry::HKEY_CURRENT_USER | Out-Null
         New-PSDrive HKLM -PSProvider Registry -Root Registry::HKEY_LOCAL_MACHINE | Out-Null
         New-PSDrive HKU -PSProvider Registry -Root Registry::HKEY_USERS | Out-Null
+
+        #Validate User Name
+        If ($UserName -eq "") {
+            $UserName = $env:USERNAME
+            Write-Host "User name parameter not specified, assuming current user name $UserName..." -ForegroundColor Cyan
+        }
+        Else {
+            Write-Host "Checking PMS Updates for user name $UserName..." -ForegroundColor Cyan
+        }
+        Write-Host "Getting $UserName Information..." -ForegroundColor Cyan
 
         #Get User SID
         $UserSID = (New-Object System.Security.Principal.NTAccount("$env:DomainName", "$UserName")).Translate([System.Security.Principal.SecurityIdentifier]).Value
@@ -42,19 +53,19 @@ Function Update-PMSInstall{
             }
         }until($PMSFile -ne "")
         if($PMSFile -eq ""){
-            Write-Output "Unable to find PMS Installed"
+            Write-Host "Unable to find PMS Installed" -ForegroundColor Cyan
             Break
         }else{
-            Write-Output "Found PMS ($PMSFile) Version $($PMSFile.VersionInfo.FileVersion)"
+            Write-Host "Found PMS ($PMSFile) Version $($PMSFile.VersionInfo.FileVersion)" -ForegroundColor Cyan
         }
 
         #Locate Plex AppData Folder
         If($(Get-ItemProperty "HKU:\$UserSID\Software\Plex, Inc.\Plex Media Server" -Name "LocalAppDataPath" | Select -ExpandProperty LocalAppDataPath -OutVariable LocalAppDataPath )){
 #            $LocalAppDataPath = $(Get-ItemProperty "HKU:\$UserSID\Software\Plex, Inc.\Plex Media Server" -Name "LocalAppDataPath").LocalAppDataPath
-            Write-Output "Checking custom local application data path ($LocalAppDataPath) for PMS Updates"
+            Write-Host "Checking custom local application data path ($LocalAppDataPath) for PMS Updates" -ForegroundColor Cyan
         }Else{
             $LocalAppDataPath = "$Env:SystemDrive\Users\$UserName\AppData\Local"
-            Write-Output "Checking default local application data path ($LocalAppDataPath) for PMS Updates"
+            Write-Host "Checking default local application data path ($LocalAppDataPath) for PMS Updates" -ForegroundColor Cyan
         }
 
         #Find Latest Update file available based on Creation Time
@@ -64,16 +75,16 @@ Function Update-PMSInstall{
             Write-Warning "There are no PMS Update Files in $LocalAppDataPath\Plex Media Server\Update - Check the username $UserName or Update Availability!"
             Break
         }
-        Write-Output "Found PMS Update file ($PMSInstaller) Version $($PMSInstaller.VersionInfo.FileVersion)"
+        Write-Host "Found PMS Update file ($PMSInstaller) Version $($PMSInstaller.VersionInfo.FileVersion)" -ForegroundColor Cyan
 
         #Determine if Update file is newer build than currently installed PMS
         if([Version][System.Diagnostics.FileVersionInfo]::GetVersionInfo($PMSInstaller).FileVersion -gt [Version][System.Diagnostics.FileVersionInfo]::GetVersionInfo($PMSFile.VersionInfo.FileName).FileVersion){
-            Write-Output "PMS Update Available!!! Installed PMS Version ($($PMSFile.VersionInfo.FileVersion)) is less than available PMS Update file version ($($PMSInstaller.VersionInfo.FileVersion))."
+            Write-Host "PMS Update Available!!! Installed PMS Version ($($PMSFile.VersionInfo.FileVersion)) is less than available PMS Update file version ($($PMSInstaller.VersionInfo.FileVersion))." -ForegroundColor Cyan
         }elseif([Version][System.Diagnostics.FileVersionInfo]::GetVersionInfo($PMSInstaller).FileVersion -eq [Version][System.Diagnostics.FileVersionInfo]::GetVersionInfo($PMSFile.VersionInfo.FileName).FileVersion){
-            Write-Output "PMS is Current!!! Installed PMS version ($($PMSFile.VersionInfo.FileVersion)) is equal to available PMS Update file version ($($PMSInstaller.VersionInfo.FileVersion)). Verify you've downloaded updates via Plex Web and try again!"
+            Write-Host "PMS is Current!!! Installed PMS version ($($PMSFile.VersionInfo.FileVersion)) is equal to available PMS Update file version ($($PMSInstaller.VersionInfo.FileVersion)). Verify you've downloaded updates via Plex Web and try again!" -ForegroundColor Cyan
             Break
         }else{
-            Write-Output "Currently installed PMS version ($($PMSFile.VersionInfo.FileVersion)) is greater than the latest PMS Update file version ($($PMSInstaller.VersionInfo.FileVersion)). Verify you've downloaded updates via Plex Web and try again!"
+            Write-Host "Currently installed PMS version ($($PMSFile.VersionInfo.FileVersion)) is greater than the latest PMS Update file version ($($PMSInstaller.VersionInfo.FileVersion)). Verify you've downloaded updates via Plex Web and try again!" -ForegroundColor Cyan
             Break
         }
 
