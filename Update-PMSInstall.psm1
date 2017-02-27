@@ -53,7 +53,7 @@ Function Update-PMSInstall{
 #            $LocalAppDataPath = $(Get-ItemProperty "HKU:\$UserSID\Software\Plex, Inc.\Plex Media Server" -Name "LocalAppDataPath").LocalAppDataPath
             Write-Output "Checking custom local application data path ($LocalAppDataPath) for PMS Updates"
         }Else{
-            $LocalAppDataPath = "$env:LOCALAPPDATA"
+            $LocalAppDataPath = "$Env:SystemDrive\Users\$UserName\AppData\Local"
             Write-Output "Checking default local application data path ($LocalAppDataPath) for PMS Updates"
         }
 
