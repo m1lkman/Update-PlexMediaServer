@@ -17,7 +17,7 @@ Function Update-PMSInstall{
     Param (
     [Parameter(ValueFromPipelineByPropertyName=$true, Position=0)]
     # Change this to the user name you run Plex Media Server under, or use the parameter and enter a value.
-    $UserName = "$env:USERNAME"
+    $UserName = ""
     )
 
     Try{
