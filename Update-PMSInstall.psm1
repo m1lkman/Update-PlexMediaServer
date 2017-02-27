@@ -64,7 +64,7 @@ Function Update-PMSInstall{
 #            $LocalAppDataPath = $(Get-ItemProperty "HKU:\$UserSID\Software\Plex, Inc.\Plex Media Server" -Name "LocalAppDataPath").LocalAppDataPath
             Write-Host "Checking custom local application data path ($LocalAppDataPath) for PMS Updates" -ForegroundColor Cyan
         }Else{
-            $LocalAppDataPath = "$env:LOCALAPPDATA"
+            $LocalAppDataPath = "$Env:SystemDrive\Users\$UserName\AppData\Local"
             Write-Host "Checking default local application data path ($LocalAppDataPath) for PMS Updates" -ForegroundColor Cyan
         }
 
@@ -115,6 +115,9 @@ Function Update-PMSInstall{
         #cleanup after install
         If($(Get-ItemProperty "HKU:\$UserSID\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Plex Media Server" -ErrorAction SilentlyContinue)){
             Remove-ItemProperty "HKU:\$UserSID\Software\Microsoft\Windows\CurrentVersion\Run\" -Name "Plex Media Server" -Force -Verbose
+        }
+        If ($(Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Plex Media Server" -ErrorAction SilentlyContinue)) {
+            Remove-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Plex Media Server" -Force -Verbose
         }
 
         #Restart PlexService
