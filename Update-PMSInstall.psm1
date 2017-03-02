@@ -17,7 +17,7 @@ Function Update-PMSInstall{
     Param (
     [Parameter(ValueFromPipelineByPropertyName=$true, Position=0)]
     # Change this to the user name you run Plex Media Server under, or use the parameter and enter a value.
-    $UserName = ""
+    $UserName = $null
     )
 
     Try{
@@ -100,24 +100,30 @@ Function Update-PMSInstall{
         #Stop all related processes
         Get-Process -Name 'Plex Media Server','Plex Media Scanner','PlexDlnaServer','PlexNewTranscoder','PlexScriptHost','PlexTranscoder' -ErrorAction SilentlyContinue | Stop-Process -Force -Verbose -ErrorAction SilentlyContinue
 
-        #colorful banner
-        Do{
+        #Start Silent install of PMS
+        $Process = Start-Process -FilePath "$PMSInstaller" -ArgumentList "/install /passive /norestart" -PassThru
+        While(Get-Process -Id $Process.Id -ErrorAction SilentlyContinue){
             [enum]::GetValues([System.ConsoleColor]) | Where-Object {$_ -ne 'Black'} | ForEach-Object{
+                Clear-Host
                 Write-Host 'Updating Plex Media Server...' -ForegroundColor $_
                 Start-Sleep -Seconds 1
-                Clear-Host
-            }
+                }
         }
-
-        #Start Silent install of PMS
-        While(Start-Process -FilePath "$PMSInstaller" -ArgumentList "/install /passive /norestart" -Wait)
+        if($Process.ExitCode -eq 0){
+            Write-Host "PMS Update Completed Successfully!!! Installed PMS Version is now $($(Get-ItemProperty -Path $PMSFile).VersionInfo.FileVersion)" -ForegroundColor Cyan
+        }elseif($Process.ExitCode -eq 3010){
+            Write-Host "PMS Update Completed Successfully!!! A Restart of the computer is required. Installed PMS Version is now $($(Get-ItemProperty -Path $PMSFile).VersionInfo.FileVersion)" -ForegroundColor Cyan
+        }else{
+            Write-Warning "An error occurred during the PMS Update (Exit code was $($Process.ExitCode))."
+            Break
+        }
 
         #cleanup after install
         If($(Get-ItemProperty "HKU:\$UserSID\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Plex Media Server" -ErrorAction SilentlyContinue)){
-            Remove-ItemProperty "HKU:\$UserSID\Software\Microsoft\Windows\CurrentVersion\Run\" -Name "Plex Media Server" -Force -Verbose
+            Remove-ItemProperty "HKU:\$UserSID\Software\Microsoft\Windows\CurrentVersion\Run\" -Name "Plex Media Server" -Force
         }
         If ($(Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Plex Media Server" -ErrorAction SilentlyContinue)) {
-            Remove-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Plex Media Server" -Force -Verbose
+            Remove-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Plex Media Server" -Force
         }
 
         #Restart PlexService
