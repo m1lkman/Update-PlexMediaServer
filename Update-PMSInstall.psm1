@@ -109,6 +109,7 @@ Function Update-PMSInstall{
                 Start-Sleep -Seconds 1
                 }
         }
+        Clear-Host
         if($Process.ExitCode -eq 0){
             Write-Host "PMS Update Completed Successfully!!! Installed PMS Version is now $($(Get-ItemProperty -Path $PMSFile).VersionInfo.FileVersion)" -ForegroundColor Cyan
         }elseif($Process.ExitCode -eq 3010){
