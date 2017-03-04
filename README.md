@@ -38,6 +38,7 @@ Windows 10 with PowerShell 5.0
 
 Optional
 Change the name Admin in the $UserName parameter. ($UserName = "Admin"). This prevents you from manually typing the username in this parameter each time.
+
 Version Information
 2017.3.2 (Updates by m1lkman)
 Corrected Logic for UserName briging back some origial code from eansconforti
