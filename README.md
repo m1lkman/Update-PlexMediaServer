@@ -1,6 +1,6 @@
 # Plex Service updater (Update-PMSInstall.pms1)
 
-a Windows PowerShell module for automating Plex Media Server updates/upgrade with Plex Service installed. It's not much, but it sure beats manually stopping services, updating PMS and starting services.
+A Windows PowerShell module for automating Plex Media Server updates/upgrade with Plex Service installed. It's not much, but it sure beats manually stopping services, updating PMS and starting services.
 
 ### Prerequisites
 
@@ -12,7 +12,7 @@ Windows 10 with PowerShell 5.
 
 Optional
 
-Change the name Admin in the $UserName parameter. ($UserName = ""). This prevents you from manually typing the username in this parameter each time.
+Change $UserName parameter. ($UserName = ""). This prevents you from manually typing the username in this parameter each time.
 
 ```
 $UserName = "PMSUser"
