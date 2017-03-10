@@ -55,14 +55,14 @@ Invoke-Command -ComputerName Server1 -Credential [<Administrator>] -ScriptBlock 
   * Corrected Logic for UserName briging back some origial code from eansconforti
   * New loop to execute update exe and monitor while running with logic for exitcode
   * Switched to $env:SystemDrive to build AppDataPath
-
+  
   2017.2.27 (Updates by m1lkman)
   * Moved to GitHub
   * Moved away from using WMI to find User SID
   * Added new do loop to find PSM exe in all possible locations
   * Switched to $env:LOCALAPPDATA
   * increased message verbosity to include version numbers added more comments
-
+  
   2016.6.4 (Updates by evansconforti)
   * Added check to see if account is disabled.
 
