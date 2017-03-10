@@ -32,23 +32,52 @@ Save it to the %ProgramFiles%\WindowsPowerShell\Modules\Update-PMSInstall direct
 * A: Create a folder called Update-PMSInstall in the %ProgramFiles%\WindowsPowerShell\Modules directory, and then copy the module Update-PMSInstall.psm1 into the %ProgramFiles%\WindowsPowerShell\Modules\Update-PMSInstall directory.
 * Q: How do you use this module?
 * A: First import the module by launch PowerShell as an Administrator and running the following command:
+```
 Import-Module Update-PMSInstall
+```
 Then for local execution type either:
+```
 Update-PMSInstall or Update-PMSInstall -UserName [<UserName>]
+```
 or remote execution type either:
+```
 Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PMSInstall}
- or
+```
+or
+```
 Invoke-Command -ComputerName Server1 -Credential [<Administrator>] -ScriptBlock ${function:Update-PMSInstall -UserName [<UserName>]}
+```
 * Q:  How often will you update the module?
 * A: That is entirely up to you! Please share your updates here.
 
-## Contributing
+## Version Information
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+** 2017.3.2 (Updates by m1lkman)
+* Corrected Logic for UserName briging back some origial code from eansconforti
+* New loop to execute update exe and monitor while running with logic for exitcode
+* Switched to $env:SystemDrive to build AppDataPath
 
-## Versioning
+** 2017.2.27 (Updates by m1lkman)
+* Moved to GitHub
+* Moved away from using WMI to find User SID
+* Added new do loop to find PSM exe in all possible locations
+* Switched to $env:LOCALAPPDATA
+* increased message verbosity to include version numbers added more comments
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+** 2016.6.4 (Updates by evansconforti)
+* Added check to see if account is disabled.
+
+** 2016.4.15 (Updates by Justin.Wedepohl)
+* Added User check for current user if none specified.
+* Cleaned up console output.
+
+** 2016.3.5 (Updates by Justin.Wedepohl)
+* Verify EXE exists before continuing.
+* Changed the 'Last 1' to 'First 1' in the EXE sort to return the newest executable.
+* Simplified User SID logic so it works for Local accounts and domain accounts.
+*Logic to pull non-default local app path if configured then default to AppData
+
+** 2016.1.0 (Totally re-written)
 
 ## Authors
 
@@ -63,6 +92,6 @@ This script is free to use or edit, and should be used at your own risk!
 
 ## Acknowledgments
 
-* evanscnforti from Plex Forums for initial code
+* [evanscnforti](https://forums.plex.tv/profile/discussions/evansconforti) from Plex Forums for initial code
 * The Plex Team
 * cmurph for creating [PMS as a Service](https://forums.plex.tv/discussion/93994/pms-as-a-service/p1)
