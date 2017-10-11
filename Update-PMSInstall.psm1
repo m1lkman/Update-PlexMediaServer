@@ -4,13 +4,13 @@
 .DESCRIPTION
    Use this script to update systems that have Plex Media Server and use the Plex Server service.
 .EXAMPLE
-   Update-PMSInstall
+   Update-PlexMediaServer
 .EXAMPLE
-   Update-PMSInstall -UserName JDoe
+   Update-PlexMediaServer -UserName JDoe
 .EXAMPLE
-   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PMSInstall}
+   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PlexMediaServer}
 .EXAMPLE
-   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PMSInstall -UserName JDoe} 
+   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PlexMediaServer -UserName JDoe} 
 #>
 Function Update-PMSInstall{
     [CmdletBinding()]
@@ -101,6 +101,8 @@ Function Update-PMSInstall{
         Get-Process -Name 'Plex Media Server','Plex Media Scanner','PlexDlnaServer','PlexNewTranscoder','PlexScriptHost','PlexTranscoder' -ErrorAction SilentlyContinue | Stop-Process -Force -Verbose -ErrorAction SilentlyContinue
 
         #Start Silent install of PMS
+        # /install | /repair | /uninstall | /layout - installs, repairs, uninstalls or creates a compelte local copy of bundle in directory. Install is the default
+        # /passive | /quiet - displays minimal UI with no prompts or display no UI and no prompts. By default UI and all prompts are displayed.
         $Process = Start-Process -FilePath "$PMSInstaller" -ArgumentList "/install /passive /norestart" -PassThru
         While(Get-Process -Id $Process.Id -ErrorAction SilentlyContinue){
             [enum]::GetValues([System.ConsoleColor]) | Where-Object {$_ -ne 'Black'} | ForEach-Object{
