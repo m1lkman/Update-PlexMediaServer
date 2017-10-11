@@ -1,4 +1,4 @@
-# Plex Service updater (Update-PMSInstall.pms1)
+# Plex Service updater (Update-PlexMediaServer.pms1)
 
 A Windows PowerShell module for automating Plex Media Server updates/upgrade with Plex Service installed. It's not much, but it sure beats manually stopping services, updating PMS and starting services.
 
@@ -19,7 +19,7 @@ $UserName = "PMSUser"
 ```
 ### Installing
 
-Save module as Update-PMSInstall.psm1 in to the %ProgramFiles%\WindowsPowerShell\Modules\Update-PMSInstall directory.
+Save module as Update-PlexMediaServer.psm1 in to the %ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer directory.
 
 ## Q&A
 
@@ -32,19 +32,19 @@ Save module as Update-PMSInstall.psm1 in to the %ProgramFiles%\WindowsPowerShell
 * Q: How do you use this module?
 * A: First import the module by launch PowerShell as an Administrator and running the following command:
 ```
-Import-Module Update-PMSInstall
+Import-Module Update-PlexMediaServer
 ```
 Then for local execution type either:
 ```
-Update-PMSInstall or Update-PMSInstall -UserName [<UserName>]
+Update-PMSInstall or Update-PlexMediaServer -UserName [<UserName>]
 ```
 or remote execution type either:
 ```
-Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PMSInstall}
+Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PlexMediaServer}
 ```
 or
 ```
-Invoke-Command -ComputerName Server1 -Credential [<Administrator>] -ScriptBlock ${function:Update-PMSInstall -UserName [<UserName>]}
+Invoke-Command -ComputerName Server1 -Credential [<Administrator>] -ScriptBlock ${function:Update-PlexMediaServer -UserName [<UserName>]}
 ```
 * Q:  How often will you update the module?
 * A: That is entirely up to you! Please share your updates here.
