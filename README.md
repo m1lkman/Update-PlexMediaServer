@@ -1,4 +1,4 @@
-# Plex Service updater (Update-PlexMediaServer.pms1)
+# Plex Media Server Service updater (Update-PlexMediaServer.pms1)
 
 A Windows PowerShell module for automating Plex Media Server updates/upgrade with Plex Service installed. It's not much, but it sure beats manually stopping services, updating PMS and starting services.
 
