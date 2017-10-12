@@ -12,7 +12,7 @@
 .EXAMPLE
    Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PlexMediaServer -UserName JDoe} 
 #>
-Function Update-PMSInstall{
+Function Update-PlexMediaServer{
     [CmdletBinding()]
     Param (
     [Parameter(ValueFromPipelineByPropertyName=$true, Position=0)]
