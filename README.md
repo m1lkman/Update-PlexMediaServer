@@ -100,11 +100,11 @@ Add arguments
 * Q: How do you install this module?
 * A: Create a folder called Update-PlexMediaServer in the %ProgramFiles%\WindowsPowerShell\Modules directory, and then copy the module Update-PlexMediaServer.psm1 into the %ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer directory.
 * Q: How often will you update the module?
-* A: That is entirely up to you! Please share your suggestions/requirements/updates/fixes here.
+* A: That is entirely up to you! Create some issues or fork and fix/add whe you need.
 
 ## Version Information
 
-  2017.10.13 (Updates by m1lkman)
+  2.0 2017.10.13 (Updates by m1lkman)
   * Added logic to check plex.tv for latest PMS version and download if needed.
   * Added support for plex.tv login credentials or authentication token to validate PlexPass(Beta) PMS versions and downloads.
   * Added logic to validate checksum on downloaded updates
