@@ -309,7 +309,16 @@ Function Update-PlexMediaServer
     }
 }
 
-function Get-PlexToken ([string]$PlexLogin, [string]$Password) {
+function Get-PlexToken{
+    [CmdletBinding()]
+    param(
+    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    # 
+    [string]$PlexLogin,
+    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    # 
+    [string]$Password
+    )
     
     if($PlexLogin -eq ""){
         $PlexLogin=Read-Host -Prompt "Enter Plex.tv Email or ID"
