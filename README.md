@@ -104,7 +104,7 @@ Add arguments
 
 ## Version Information
 
-  2.0 2017.10.13 (Updates by m1lkman)
+  ```2.0``` 2017.10.13 (Updates by m1lkman)
   * Added logic to check plex.tv for latest PMS version and download if needed.
   * Added support for plex.tv login credentials or authentication token to validate PlexPass(Beta) PMS versions and downloads.
   * Added logic to validate checksum on downloaded updates
