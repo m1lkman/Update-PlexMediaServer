@@ -1,4 +1,4 @@
-﻿#Requires -Version 4.0
+#Requires -Version 4.0
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
@@ -266,11 +266,26 @@ Function Update-PlexMediaServer
             }
 
             if($PlexUser){
+                if(-not $quiet){Write-Host "`t Username: $($PlexUser[0].user.username)" -ForegroundColor Cyan}
+                if(-not $quiet){Write-Host "`t authToken: $($PlexUser[0].user.authToken)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Subscription: $($PlexUser[0].user.subscription.status)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Plan: $($PlexUser[0].user.subscription.plan)" -ForegroundColor Cyan}
                 $PlexPassStatus=$PlexUser[0].user.subscription.active
             }else{
                 $PlexPassStatus="False"
+            }
+
+            #Find Plex Media Server Install Key if process not running
+            $PMSInstallKeys=("HKLM:\Software\Wow6432Node\Plex, Inc.\Plex Media Server","HKLM:\Software\Plex, Inc.\Plex Media Server")
+            foreach($Key in $PMSInstallKeys){
+                if(Test-Path $Key -ErrorAction SilentlyContinue){
+                    if(Get-ItemProperty "$(Get-ItemProperty $Key -Name "InstallFolder" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty InstallFolder -OutVariable InstallFolder)\Plex Media Server.exe" -OutVariable PMSExeFile -ErrorAction SilentlyContinue){
+                    if($LogFile){Write-Log -Message "Plex Media Server found $PMSExeFile" -Path $LogFile -Level Info}
+                        Break
+                    }else{
+                        if($LogFile){Write-Log -Message "Plex Media Server not found in $Key" -Path $LogFile -Level Info}
+                    }
+                }
             }
 
             #Locate Plex Media Server.exe and Get Current Version and determin user name
@@ -281,21 +296,7 @@ Function Update-PlexMediaServer
             }else{ # if process isn't running
                 if($LogFile){Write-Log -Message "Plex Media Server process not running" -Path $LogFile -Level Info}
                 if(-not $UserName){$UserName=$env:USERNAME} 
-                                               
-                #Find Plex Media Server Install Key if process not running
-                $PMSInstallKeys=("HKLM:\Software\Wow6432Node\Plex, Inc.\Plex Media Server","HKLM:\Software\Plex, Inc.\Plex Media Server")
-                foreach($Key in $PMSInstallKeys){
-                    if(Test-Path $Key -ErrorAction SilentlyContinue){
-                        if(Get-ItemProperty "$(Get-ItemProperty $Key -Name "InstallFolder" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty InstallFolder -OutVariable InstallFolder)\Plex Media Server.exe" -OutVariable PMSExeFile -ErrorAction SilentlyContinue){
-                        if($LogFile){Write-Log -Message "Plex Media Server found $PMSExeFile" -Path $LogFile -Level Info}
-                            Break
-                        }else{
-                            if($LogFile){Write-Log -Message "Plex Media Server not found in $Key" -Path $LogFile -Level Info}
-                        }
-                    }
-                }
             }
-
 
             #Get User SID
             try{
@@ -312,8 +313,13 @@ Function Update-PlexMediaServer
                 if(Test-Path $Key -ErrorAction SilentlyContinue){
                     if(Get-ItemProperty $Key -OutVariable PmsSettings -ErrorAction SilentlyContinue){
                         if($LogFile){Write-Log -Message "Key Found $Key" -Path $LogFile -Level Info}
-                        $InstallFolder=$PmsSettings.InstallFolder
-                        if($LogFile){Write-Log -Message "InstallFolder: $InstallFolder" -Path $LogFile -Level Info}
+                        switch($PmsSettings.ButlerUpdateChannel){
+                            0{$ButlerUpdateChannel="Public"}
+                            8{$ButlerUpdateChannel="Beta"}
+                        }
+                        if($LogFile){Write-Log -Message "ButlerUpdateChannel: $ButlerUpdateChannel" -Path $LogFile -Level Info}
+                        $LocalAppDataPath=$PmsSettings.LocalAppDataPath
+                        if($LogFile){Write-Log -Message "LocalAppDataPath: $LocalAppDataPath" -Path $LogFile -Level Info}
                         $PlexOnlineToken=$PmsSettings.PlexOnlineToken
                         if($LogFile){Write-Log -Message "PlexOnlineToken: $PlexOnlineToken" -Path $LogFile -Level Info}
                         Break #break from foreach
@@ -339,6 +345,8 @@ Function Update-PlexMediaServer
                 }else{
                     if($LogFile){Write-Log -Message "Plex Server Online Authentication Token $PlexToken specified at command-line Validated" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "Server Token Validated" -ForegroundColor Cyan}
+                    if(-not $quiet){Write-Host "`t User Name: $($PmsSettings.PlexOnlineUsername)" -ForegroundColor Cyan}
+                    if(-not $quiet){Write-Host "`t authToken: $($PlexOnlineToken)" -ForegroundColor Cyan}
                 }
             }
 
@@ -483,11 +491,12 @@ Function Update-PlexMediaServer
 
             #Check if Update already downloaded and has valid checksum
             #Locate Plex AppData Folder
-            If($(Get-ItemProperty "HKU:\$UserSID\Software\Plex, Inc.\Plex Media Server" -Name "LocalAppDataPath" | Select-Object -ExpandProperty LocalAppDataPath -OutVariable LocalAppDataPath )){
-                if($LogFile){Write-Log -Message "Checking custom local application data path ($LocalAppDataPath) for Updates" -Path $LogFile -Level Info}                
-            }Else{
-                $LocalAppDataPath = "$Env:SystemDrive\Users\$UserName\AppData\Local"
-                if($LogFile){Write-Log -Message "Checking default local application data path ($LocalAppDataPath) for Updates" -Path $LogFile -Level Info}                
+            if($LocalAppDataPath -eq ""){
+                If($(Get-ItemProperty "HKU:\$UserSID\Software\Plex, Inc.\Plex Media Server" -Name "LocalAppDataPath" | Select-Object -ExpandProperty LocalAppDataPath -OutVariable LocalAppDataPath )){
+                    if($LogFile){Write-Log -Message "Checking custom local application data path ($LocalAppDataPath) for Updates" -Path $LogFile -Level Info}                
+                }Else{
+                    if($LogFile){Write-Log -Message "Checking default local application data path ($LocalAppDataPath) for Updates" -Path $LogFile -Level Info}                
+                }
             }
             if((Test-Path -Path "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe") -and `
             ((Get-FileHash "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe" -Algorithm SHA1).Hash -ieq $releaseChecksum)){
@@ -711,6 +720,11 @@ Function Update-PlexMediaServer
         }Catch{
             Write-Warning "Error occurred: $_"
             return $_
+            if ($Host.Name -eq 'Windows PowerShell ISE Host') {
+                throw $LASTEXITCODE
+            } else {
+                exit $LASTEXITCODE
+            }
         }
     }
     end{
