@@ -1,5 +1,5 @@
-# Plex Media Server Updater PowerShell Module (Update-PlexMediaServer.pms1)
-Windows PowerShell module for automating Plex Media Server updates/upgrades when running with Cjmurph's Plex Media Server Service Wrapper. It automates checking latest PMS version, downloading the update, stopping services/processes, installing the update, and restarting services. It supports running interactively or silently for automation. Support downloading and installing PlexPass(Beta) updates using authorized PlexPass accounts or plex authentication tokens.
+# Plex Media Server Updater PowerShell Module
+Windows PowerShell module for automating Plex Media Server updates/upgrades when running with Cjmurph's Plex Media Server Service Wrapper. It automates checking latest PMS version, downloading the update, stopping services/processes, installing the update, and restarting services. It supports running interactively or silently (for automation) and downloading and installing PlexPass(Beta) updates using authorized PlexPass accounts or plex authentication tokens.
 ### Prerequisites
   One of the following Operating Systems with supported PowerShell version.
   * Windows 7/Windows Server 2008 with PowerShell 4.0 or later
@@ -10,7 +10,7 @@ Windows PowerShell module for automating Plex Media Server updates/upgrades when
 
   Cjmurph's Plex Media Server Service Wrapper (PMS as a Service) 1.0.3 or later (https://github.com/cjmurph/PmsService) 
 ### Installation
-1. Save the module file (Update-PlexMediaServer.psm1) to a folder of the same name in one of your PowerShell module directories  (%ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer or %UserProfile%\Documents\WindowsPowerShell\Modules by deafult). See [Installing a Powershell Module](https://msdn.microsoft.com/en-us/library/dd878350).
+1. Save the module file (Update-PlexMediaServer.psm1) to a folder of the same name in one of your PowerShell module directories  (%ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer or %UserProfile%\Documents\WindowsPowerShell\Modules by default). See [Installing a Powershell Module](https://msdn.microsoft.com/en-us/library/dd878350).
 Or using git, execute the following commands:
 ```
 cd %ProgramFiles%\WindowsPowerShell\Modules\
