@@ -1,5 +1,5 @@
 # Plex Media Server Updater PowerShell Module
-Windows PowerShell module for automating Plex Media Server updates/upgrades when running with Cjmurph's Plex Media Server Service Wrapper. It automates checking latest PMS version, downloading the update, stopping services/processes, installing the update, and restarting services. It supports running interactively or silently (for automation) and downloading and installing PlexPass(Beta) updates using authorized PlexPass accounts or plex authentication tokens.
+Windows PowerShell module for automating Plex Media Server updates/upgrades when running with Cjmurph's Plex Media Server Service Wrapper. It automates checking latest PMS version, downloading the update, stopping services/processes, installing the update, and restarting services. It supports running interactively or silently (for automation) and downloading and installing PlexPass(Beta) updates using authorized Plex Authentication Tokens (User or Server) or Plex.tv credentials.
 ### Prerequisites
   One of the following Operating Systems with supported PowerShell version.
   * Windows 7/Windows Server 2008 with PowerShell 4.0 or later
@@ -26,6 +26,26 @@ Import-Module Update-PlexMediaServer
 All parameters can be specified either at the command-line or set in the Parameters section of script file itself if you prefer. Edit at your own risk. See examples below for use cases. Use Get-Help cmdlet for details about parameters and usage.
 ```
 Get-Help Update-PlexMediaServer
+
+NAME
+    Update-PlexMediaServer
+    
+SYNTAX
+    Update-PlexMediaServer [-PlexToken] <string> [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Passive] [-Quiet]  [<CommonParameters>]
+    
+    Update-PlexMediaServer -EmailNotify -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-PlexToken 
+    <string>] [-PlexServerToken] [-Credential <pscredential>] [-PlexLogin <string>] [-PlexPassword <string>] [-PlexServerPort <int>] [-UserName <string>] 
+    [-Force] [-Passive] [-Quiet] [-EmailLog] [-SmtpPort <int>] [-EnableSSL]  [<CommonParameters>]
+    
+    Update-PlexMediaServer [-PlexServerToken] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Passive] [-Quiet]  [<CommonParameters>]
+    
+    Update-PlexMediaServer [-Credential] <pscredential> [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Passive] [-Quiet]  [<CommonParameters>]
+    
+    Update-PlexMediaServer [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Passive] [-Quiet]  
+    [<CommonParameters>]
+    
+    Update-PlexMediaServer -LogFile <string> [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Passive] [-Quiet] [-EmailLog]  [<CommonParameters>]
+    
 ```
 ### Examples
 For local interactive execution type:
@@ -40,13 +60,17 @@ or
 ```
 Invoke-Command -ComputerName Server1 [-Credential] <pscredential> -ScriptBlock {Update-PlexMediaServer -UserName <UserName>}
 ```
-For local interactive execution checking for PlexPass(Beta) updates with secure password prompt
+For local interactive execution with password prompt
 ```
 Update-PlexMediaServer -PlexLogin '<PlexLogin/PlexID>'
 ```
-To silently check for PlexPass(Beta) updates using Plex authentiation token.
+Execute silently using Plex authentiation Token.
 ```
-Update-PlexMediaServer -PlexToken <Token>
+Update-PlexMediaServer -PlexToken <Token> -Quiet
+```
+Execute passively using Plex Server Online Authentiation Token (requires Plex Server is logged in and Clamied).
+```
+Update-PlexMediaServer -PlexServerToken -Passive
 ```
 or silently check for PlexPass updates using Plex.tv login and password:
 ```
@@ -59,14 +83,6 @@ Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@
 or enable email notifications with custom SMTP port and SSL authentiation:
 ```
 Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL
-```
-Get Plex authenticaton token so you don't have to save your credentials in your scripts or scheduled tasks (will prompt if either value is missing when running interactively):
-```
-Get-PlexToken -PlexLogin <Email/ID> -Password <Password>
-```
-Get-PlexToken Syntax
-```
-Get-PlexToken [[-PlexLogin] <string[]>] [-Password <string[]>]
 ```
 ### Scheduled Task Example (putting it all together)
 Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use my plex authentication token to install the latest PlexPass updates and enable email notifications.
@@ -89,7 +105,17 @@ powershell.exe
 ```
 Add arguments
 ```
--Command "{& Update-PlexMediaServer -PlexToken abcdeabcdeabcdeabcde -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL}
+-Command "{& Update-PlexMediaServer -PlexServerToken -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL}
+```
+
+### Finding Your Plex Authentication Token (Get-PlexToken)
+Get Plex authenticaton token so you don't have to save your credentials in your scripts or scheduled tasks (will prompt if either value is missing when running interactively):
+```
+Get-PlexToken -PlexLogin <Email/ID> -Password <Password>
+```
+Get-PlexToken Syntax
+```
+Get-PlexToken [[-Credential] <pscredential>] [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru]  [<CommonParameters>]
 ```
 ### Q&A
 
