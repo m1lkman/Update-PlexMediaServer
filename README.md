@@ -115,7 +115,7 @@ Get-PlexToken -PlexLogin <Email/ID> -Password <Password>
 ```
 Get-PlexToken Syntax
 ```
-Get-PlexToken [[-Credential] <pscredential>] [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru]  [<CommonParameters>]
+Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-Credential <pscredential>]  [<CommonParameters>]
 ```
 ### Q&A
 
