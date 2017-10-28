@@ -92,10 +92,11 @@ Function Update-PlexMediaServer
     [string]
     $UserName,
     # 
-    [Parameter(Mandatory=$true,
+    [Parameter(Mandatory=$false,
     ValueFromPipelineByPropertyName=$true,
     ParameterSetName="Logfile",
     HelpMessage="Enter Log File path, default is PSScriptRoot\Update-PlexMediaServer.log")]
+    [Parameter(Mandatory=$false,ParameterSetName="EmailNotify")]
     [string]
     $LogFile="$PSScriptRoot\Update-PlexMediaServer.log",
     # Force update 
