@@ -108,7 +108,7 @@ Add arguments
 -Command "{& Update-PlexMediaServer -PlexServerToken -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL}
 ```
 
-### Finding Your Plex Authentication Token (Get-PlexToken)
+### Find Your Plex Authentication Token (Get-PlexToken)
 Get Plex authenticaton token so you don't have to save your credentials in your scripts or scheduled tasks (will prompt if either value is missing when running interactively):
 ```
 Get-PlexToken -PlexLogin <Email/ID> -Password <Password>
