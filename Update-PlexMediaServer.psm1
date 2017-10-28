@@ -721,6 +721,18 @@ Function Update-PlexMediaServer
 function Get-PlexToken{
     [CmdletBinding()]
     param(
+    #
+    [Parameter(Position=0,
+    ValueFromPipelineByPropertyName=$true)] 
+    [string]$PlexLogin,
+    #
+    [Parameter(Position=1,
+    ValueFromPipelineByPropertyName=$true)]
+    [string]$PlexPassword,
+    [parameter(Mandatory = $False)]
+    [Switch]
+    $PassThru,
+    #
     [ValidateNotNull()]
     [System.Management.Automation.PSCredential]
     [System.Management.Automation.Credential()]
@@ -732,16 +744,7 @@ function Get-PlexToken{
             $True
         }
         })]
-    [object]$Credential = [System.Management.Automation.PSCredential]::Empty, 
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
-    # 
-    [string]$PlexLogin,
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
-    # 
-    [string]$PlexPassword,
-    [parameter(Mandatory = $False)]
-    [Switch]
-    $PassThru
+    [object]$Credential = [System.Management.Automation.PSCredential]::Empty 
     )
     [hashtable]$return=@{}
 
