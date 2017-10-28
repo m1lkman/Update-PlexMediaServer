@@ -34,11 +34,11 @@ Update-PlexMediaServer
 ```
 or remote execution type either:
 ```
-Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PlexMediaServer}
+Invoke-Command -ComputerName Server1 [-Credential] <pscredential> -ScriptBlock {Update-PlexMediaServer}
 ```
 or
 ```
-Invoke-Command -ComputerName Server1 -Credential [<Administrator>] -ScriptBlock ${function:Update-PlexMediaServer -UserName [<UserName>]}
+Invoke-Command -ComputerName Server1 [-Credential] <pscredential> -ScriptBlock {Update-PlexMediaServer -UserName <UserName>}
 ```
 For local interactive execution checking for PlexPass(Beta) updates with secure password prompt
 ```
