@@ -105,7 +105,6 @@ Function Update-PlexMediaServer
                 ValueFromPipelineByPropertyName=$true,
                 ParameterSetName="TextAuth",
                 HelpMessage="Enter Plex.tv Password")]
-    [ValidateNotNull()]
     [Parameter(
                 Mandatory=$false,
                 ParameterSetName="EmailNotify")]
@@ -161,6 +160,12 @@ Function Update-PlexMediaServer
                 Mandatory=$false,
                 ParameterSetName="Passive",
                 HelpMessage="Displays minimal UI with no prompts")]
+    [Parameter(
+                Mandatory=$false,
+                ParameterSetName="EmailNotify")]
+    [Parameter(
+                Mandatory=$false,
+                ParameterSetName="Logfile")]
 
                 [switch]$Passive,
 
@@ -169,6 +174,12 @@ Function Update-PlexMediaServer
                 Mandatory=$false,
                 ParameterSetName="Quiet",
                 HelpMessage="Display no UI and no prompts")]
+    [Parameter(
+                Mandatory=$false,
+                ParameterSetName="EmailNotify")]
+    [Parameter(
+                Mandatory=$false,
+                ParameterSetName="Logfile")]
 
                 [switch]$Quiet,
 
@@ -369,6 +380,9 @@ Function Update-PlexMediaServer
             }
 
             #Begin Prcess Arguments
+            if($EnableNotify){
+                if($LogFile){Write-Log -Message "Email Notification enabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
+            }
             if($DisablePlexPass){
                 if($LogFile){Write-Log -Message "PlexPass(Beta) Updates disabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
             }
@@ -585,7 +599,7 @@ Function Update-PlexMediaServer
                 if($force) {$UpdateRequired=$true}
             }elseif([version]$installedVersion -lt [version]$releaseVersion){
                 $UpdateRequired=$true
-                if($LogFile){Write-Log -Message "New version available Installed version ($installedVersion) less than available version ($releaseVersion)." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "New version available. Installed version ($installedVersion) less than available version ($releaseVersion)." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Update Available!!!" -ForegroundColor Green}
             }else{
                 if($LogFile){Write-Log -Message "Installed version ($installedVersion) less than available version ($releaseVersion)." -Path $LogFile -Level Info}
@@ -657,6 +671,7 @@ Function Update-PlexMediaServer
 
             #Stop Plex Media Server Service (PlexService)
             if($PmsService.status -ne 'Stopped'){
+                if($LogFile){Write-Log -Message "Found Plex Media Server Service Wrapper (PlexService) Running." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Stopping Plex Media Server Service (PlexService)..." -ForegroundColor Cyan -NoNewline}
                 While ($PmsService.Status -eq "Running"){
                     if($PmsService | Stop-Service -Force -ErrorAction SilentlyContinue){
@@ -715,17 +730,17 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Restart Required: False" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Plex Media Server update completed with ExitCode $($Process.ExitCode))." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Plex Media Server update completed with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 3010 ){
                 if(-not $quiet){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Restart Required: True" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Plex Media Server update completed with ExitCode $($Process.ExitCode)). Restart Required." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Plex Media Server update completed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 1602 ){
                 if(-not $quiet){Write-Host "Cancelled" -ForegroundColor red}
                 if(-not $quiet){Write-Host "`t Update was cancelled by user. ExitCode: $($Process.ExitCode)" -ForegroundColor Red}
                 if(-not $quiet){Write-Host "`t Plex Media Server was not updated." -ForegroundColor Red}
-                if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode))." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
             }else{
                 if(-not $quiet){Write-Host "ERROR!!!" -ForegroundColor Red}
                 if(-not $quiet){Write-Host "`t An Error occurred installing updated. Exit Code: $($Process.ExitCode)" -ForegroundColor Red}
@@ -812,21 +827,29 @@ Function Update-PlexMediaServer
             }
 
             if($EmailNotify){
-                if(-not $quiet){Write-Host "Sending Email Notification..." -ForegroundColor Cyan -NoNewline}
                 $msg = "Plex Media Server $($PlexServer[0].MediaContainer.friendlyName) was updated on computer $env:COMPUTERNAME.`r`n`r`nNew Version: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.ProductVersion)`r`nOld Version: $installedVersion-$installedBuild"
+                if($LogFile){Write-Log -Message "Preparing Notification Email: $msg" -Path $LogFile -Level Info}
+                if(-not $quiet){Write-Host "Sending Email Notification..." -ForegroundColor Cyan -NoNewline}
                 if($EmailLog){
+                    if($LogFile){Write-Log -Message "Sending Email Notification to $SmtpTo with log attached." -Path $LogFile -Level Info}
                     if(Send-ToEmail -SmtpFrom $SmtpFrom -SmtpTo $SmtpTo -Subject "Plex Media Server Updated on $env:COMPUTERNAME" `
                         -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
-                        -EnableSSL $EnableSSL -attachmentpath $LogFile -IsBodyHtml){
+                        -EnableSSL $EnableSSL -attachmentpath $LogFile -IsBodyHtml $true -ErrorAction SilentlyContinue){
+                        if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
+                        if($LogFile){Write-Log -Message "Error sending Email Notification" -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Error Sending" -ForegroundColor Red}
                     }
                 }else{
+                    if($LogFile){Write-Log -Message "Sending Email Notification to $SmtpTo." -Path $LogFile -Level Info}
                     if(Send-ToEmail -SmtpFrom $SmtpFrom -SmtpTo $SmtpTo -Subject "Plex Media Server updated on $env:COMPUTERNAME" `
-                        -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort -EnableSSL $EnableSSL){
-                        if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
+                        -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
+                        -EnableSSL $EnableSSL -IsBodyHtml $true -ErrorAction SilentlyContinue){
+                            if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
+                            if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
+                        if($LogFile){Write-Log -Message "Error sending Email Notification" -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Error Sending" -ForegroundColor Red}
                     }
                 }
@@ -862,8 +885,7 @@ function Get-PlexToken{
                 Position=1,
                 ParameterSetName="Credential",
                 ValueFromPipelineByPropertyName=$true)]
-    [ValidateNotNull()]
-                
+
                 [string]$PlexPassword,
 
     #
@@ -1014,7 +1036,7 @@ function Get-RestMethod{
 }
 
 
-function Send-ToEmail([string]$SmtpFrom, [string]$SmtpTo, [string]$Subject, [string]$Body, [string]$attachmentpath, [string]$SmtpUser, [securestring]$SmtpPassword, [string]$SmtpServer, [string]$SmtpPort, [boolean]$EnableSSL, [boolean]$IsBodyHtml){
+function Send-ToEmail([string]$SmtpFrom, [string]$SmtpTo, [string]$Subject, [string]$Body, [string]$attachmentpath, [string]$SmtpUser, [string]$SmtpPassword, [string]$SmtpServer, [string]$SmtpPort, [bool]$EnableSSL, [bool]$IsBodyHtml){
 
     $message = new-object Net.Mail.MailMessage;
     $message.From = "$SmtpFrom";
