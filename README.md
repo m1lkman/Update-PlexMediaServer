@@ -130,7 +130,7 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 
 ## Version Information
 
-  ```2.0.0``` 2017.10.31 (Updates by m1lkman)
+  ```v2.0.0 2017.10.31 (Updates by m1lkman)'''
   * Significant updates to validate version against avialable versions (Public or PlexPass/Beta) on Plex.tv
   * Supports authenticating against Plex.tv and local server using Plex.tv credentials or Tokens
   * Default execution leverages PMS Server Online Authentication token, honors Update Channel setting.
