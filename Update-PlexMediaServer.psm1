@@ -4,7 +4,7 @@
 .SYNOPSIS
    Updates systems running Plex Media Server and Plex Server Service (PlexService).
 .DESCRIPTION
-   Use this script to autoatically download and update Plex Media Server that use the Plex Server Service created by cjmurph (https://github.com/cjmurph/PmsService).
+   Use this script to download and update systems runnin Plex Media Server that use the Plex Server Service Wrapper created by cjmurph (https://github.com/cjmurph/PmsService).
 .EXAMPLE Run Interactively and attempt to update from publicly available updates.
    Update-PlexMediaServer
 .EXAMPLE Force Upgrade/reinstall even if version is greater than or equal to
