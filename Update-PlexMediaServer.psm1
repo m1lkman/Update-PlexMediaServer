@@ -2,9 +2,9 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-   Updates systems running Plex Media Server and Plex Server Service (PlexService).
+   Module for managing Plex Media Server updates running Plex Server Service Wrapper (PlexService).
 .DESCRIPTION
-   Use this script to download and update systems runnin Plex Media Server that use the Plex Server Service Wrapper created by cjmurph (https://github.com/cjmurph/PmsService).
+   Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or Beta(PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
 .EXAMPLE Run Interactively and attempt to update from publicly available updates.
    Update-PlexMediaServer
 .EXAMPLE Force Upgrade/reinstall even if version is greater than or equal to
