@@ -15,8 +15,8 @@
    Update-PlexMediaServer -PlexPass
 .EXAMPLE Run silently and attempt to update from PlexPass(Beta) available updates.
    Update-PlexMediaServer -PlexToken <Token> -Quiet
-.EXAMPLE Run Passive and update using Server Online Authentication Token.
-   Update-PlexMediaServer -PlexServerToken -Passive
+.EXAMPLE Run Passive and check latest publicly available updates.
+   Update-PlexMediaServer -DisablePlexPass -Passive
 .EXAMPLE
    Update-PlexMediaServer -PlexLogin <Email/ID> -PlexPassword <Password>
 .EXAMPLE
