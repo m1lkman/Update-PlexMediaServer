@@ -105,6 +105,7 @@ Function Update-PlexMediaServer
                 ValueFromPipelineByPropertyName=$true,
                 ParameterSetName="TextAuth",
                 HelpMessage="Enter Plex.tv Password")]
+    [ValidateNotNull()]
     [Parameter(
                 Mandatory=$false,
                 ParameterSetName="EmailNotify")]
@@ -861,7 +862,8 @@ function Get-PlexToken{
                 Position=1,
                 ParameterSetName="Credential",
                 ValueFromPipelineByPropertyName=$true)]
-
+    [ValidateNotNull()]
+                
                 [string]$PlexPassword,
 
     #
