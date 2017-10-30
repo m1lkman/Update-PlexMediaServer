@@ -136,7 +136,7 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
   * Default execution leverages PMS Server Online Authentication token, honors Update Channel setting.
   * Added logic to validate checksum on downloaded updates
   * Updated logic to pull PMS user context from Plex Media Server.exe process
-  * 'In Use" check exits if server is currently in use
+  * "In-Use Check" will exit when active Sessions are detected on Plex Media Server 
   * Validates PMS process and Plex Web availability after update
   * Added Email notification function
   * Added Get-PlexToken function for fetching Plex authentication token via command-line
