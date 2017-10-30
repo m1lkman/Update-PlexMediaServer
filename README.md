@@ -130,12 +130,14 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 
 ## Version Information
 
-  ```2.0``` 2017.10.13 (Updates by m1lkman)
-  * Added logic to check plex.tv for latest PMS version and download if needed.
-  * Added support for plex.tv login credentials or authentication token to validate PlexPass(Beta) PMS versions and downloads.
+  ```2.0.0``` 2017.10.31 (Updates by m1lkman)
+  * Significant updates to validate version against avialable versions (Public or PlexPass/Beta) on Plex.tv
+  * Supports authenticating against Plex.tv and local server using Plex.tv credentials or Tokens
+  * Default execution leverages PMS Server Online Authentication token, honors Update Channel setting.
   * Added logic to validate checksum on downloaded updates
   * Updated logic to pull PMS user context from Plex Media Server.exe process
   * 'In Use" check exits if server is currently in use
+  * Validates PMS process and Plex Web availability after update
   * Added Email notification function
   * Added Get-PlexToken function for fetching Plex authentication token via command-line
   * Added -force option to force install of PMS even when version isn't newer.
