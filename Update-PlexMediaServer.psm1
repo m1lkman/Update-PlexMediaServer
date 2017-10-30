@@ -597,14 +597,17 @@ Function Update-PlexMediaServer
                 if($LogFile){Write-Log -Message "Version up-to-date. Installed version ($installedVersion) equal to available version ($releaseVersion)." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Running the latest version $installedVersion." -ForegroundColor Cyan}
                 if($force) {$UpdateRequired=$true}
+                $ArgumentList = "/repair" 
             }elseif([version]$installedVersion -lt [version]$releaseVersion){
                 $UpdateRequired=$true
                 if($LogFile){Write-Log -Message "New version available. Installed version ($installedVersion) less than available version ($releaseVersion)." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Update Available!!!" -ForegroundColor Green}
+                $ArgumentList = "/install" 
             }else{
                 if($LogFile){Write-Log -Message "Installed version ($installedVersion) less than available version ($releaseVersion)." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Running later than Update version" -ForegroundColor Cyan}
                 if($force) {$UpdateRequired=$true}
+                $ArgumentList = "/install" 
             }
             if(-not $quiet){Write-Host "`t PlexPass(Beta): $PlexPassStatus" -ForegroundColor Cyan}
             if(-not $quiet){Write-Host "`t Update Version: $releaseVersion" -ForegroundColor Cyan}
@@ -713,11 +716,11 @@ Function Update-PlexMediaServer
             
             #Build ArgumentList
             if($passive){
-                $ArgumentList = "/install /passive /norestart" 
+                $ArgumentList = $ArgumentList + " /passive /norestart" 
             }elseif($quiet){
-                $ArgumentList = "/install /quiet /norestart" 
+                $ArgumentList = $ArgumentList + " /quiet /norestart" 
             }else{
-                $ArgumentList = "/install /norestart" 
+                $ArgumentList = $ArgumentList + " /norestart" 
             }
 
             if($LogFile){Write-Log -Message "Starting Plex Media Server update Process: $LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList" -Path $LogFile -Level Info}
@@ -778,9 +781,9 @@ Function Update-PlexMediaServer
             if(Get-Process "Plex Media Server" -IncludeUserName -OutVariable PMSProcess -ErrorAction SilentlyContinue | Select-Object Path | Get-ItemProperty -OutVariable PMSExeFile ){
                 if($LogFile){Write-Log -Message "Plex Media Server process running $($PMSProcess.Path) as User $($PMSProcess.UserName)" -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Running" -ForegroundColor Cyan}
-                $installedVersion,$installedBuild = $PMSExeFile.VersionInfo.ProductVersion.Split('-')
-                if(-not $quiet){Write-Host "`t Version: $installedVersion" -ForegroundColor Cyan}
-                if(-not $quiet){Write-Host "`t Build: $installedBuild" -ForegroundColor Cyan}
+                $newInstalledVersion,$newInstalledBuild = $PMSExeFile.VersionInfo.ProductVersion.Split('-')
+                if(-not $quiet){Write-Host "`t Version: $newInstalledVersion" -ForegroundColor Cyan}
+                if(-not $quiet){Write-Host "`t Build: $newInstalledBuild" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Path: $PMSExeFile" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t User Context: $($PMSProcess.UserName)" -ForegroundColor Cyan}
             }else{ # if process isn't running
