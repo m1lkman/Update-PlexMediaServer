@@ -34,7 +34,7 @@
 #>
 Function Update-PlexMediaServer
 {
-    [CmdletBinding(SupportsShouldProcess,DefaultParameterSetName="TokenAuth")]
+    [CmdletBinding(SupportsShouldProcess,DefaultParameterSetName="ServerAuth")]
     param(
     # Plex Authentication Token
     [Parameter(
@@ -68,7 +68,7 @@ Function Update-PlexMediaServer
                 Mandatory=$false,
                 ParameterSetName="EmailNotify")]
 
-                [switch]$PlexServerToken,
+                [switch]$UseServerToken,
 
     #
 
@@ -326,9 +326,10 @@ Function Update-PlexMediaServer
                     if($LogFile){Write-Log -Message "Plex authentication Token $($PlexUser.user.authToken) found for Plex user $($PlexUser.user.username)" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "Credentials Validated" -ForegroundColor Cyan}
                 }
-            }elseif($PlexServerToken){#Online Plex Server Token
+            }elseif($UseServerToken){#Online Plex Server Token
                 if($LogFile){Write-Log -Message "Server Online Token Authentication enabled via command-line" -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Verifying Server Online Authentication Token..." -ForegroundColor Cyan -NoNewline}
+                $UseServerToken=$true                
             }else{
                 if(!($Passive -or $Quiet)){#interactive
                     if($PlexLogin -or $PlexPassword){
@@ -351,23 +352,24 @@ Function Update-PlexMediaServer
                         }
                     }
                 }else{#non-interactive
-
+                    if($PlexLogin -or $PlexPassword){
+                        if($LogFile){Write-Log -Message "Unable to determine Plex Authentication Token missing Plex.tv username or password from command line. Unable to prompt for information when running in non-interactive Quiet mode." -Path $LogFile -Level Info}
+                        if(-not $quiet){Write-Host "Unable to determine Plex Authentication Token." -ForegroundColor Cyan}
+                        if(-not $quiet){Write-Host "     1. Configure PlexToken variable in script. Use Get-PlexToken." -ForegroundColor Cyan}
+                        if(-not $quiet){Write-Host "     2. Specify your token in the command line, i.e. -plextoken <Token>" -ForegroundColor Cyan}
+                        if(-not $quiet){Write-Host "     3. Specify your plex.tv username/ID and password in the command line, i.e. -PlexLogin <email/id> -PlexPassword <password>" -ForegroundColor Cyan}
+                        trap {"Unable to determin Plex Authentication Token."}
+                        return
+                    }
                 }
-#                if($passive -or $quiet){#non-interactive
-#                    if($LogFile){Write-Log -Message "Unable to determine Plex Authentication Token missing Plex.tv username and/or password from command line. Unable to prompt for information when running in non-interactive quiet mode." -Path $LogFile -Level Info}
-#                    if(-not $quiet){Write-Host "Unable to determine Plex Authentication Token." -ForegroundColor Cyan}
-#                    if(-not $quiet){Write-Host "     1. Configure PlexToken variable in script. Use Get-PlexToken." -ForegroundColor Cyan}
-#                    if(-not $quiet){Write-Host "     2. Specify your token in the command line, i.e. -plextoken <Token>" -ForegroundColor Cyan}
-#                    if(-not $quiet){Write-Host "     3. Specify your plex.tv username/ID and password in the command line, i.e. -PlexLogin <email/id> -PlexPassword <password>" -ForegroundColor Cyan}
-#                    trap {"Unable to determin Plex Authentication Token."}
-#                }else{
-#
-#                }
+                if($LogFile){Write-Log -Message "Server Online Token Authentication enabled via command-line" -Path $LogFile -Level Info}
+                if(-not $quiet){Write-Host "Verifying Server Online Authentication Token..." -ForegroundColor Cyan -NoNewline}
+                $UseServerToken=$true
             }
 
             #Begin Prcess Arguments
             if($DisablePlexPass){
-                if($LogFile){Write-Log -Message "PlexPass(Beta) Updates disabled via command-line" -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "PlexPass(Beta) Updates disabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
             }
 
             if($PlexUser){
@@ -434,8 +436,7 @@ Function Update-PlexMediaServer
                 }
             }
 
-            if($PlexServerToken){
-                $PlexToken=$PlexOnlineToken
+            if($UseServerToken){
                 if((Get-RestMethod -Uri "https://plex.tv/api/resources?X-Plex-Token=$PlexOnlineToken" -OutVariable response -PassThru -ErrorAction SilentlyContinue).exception){
                     if($response.exception.Response){
                         if($LogFile){Write-Log -Message "Plex Server Online Authentication Token was not validated. Please verify or use Get-PlexToken to retrieve again. Server Response: $($response.exception.message)" -Path $LogFile -Level Info}
@@ -454,6 +455,7 @@ Function Update-PlexMediaServer
                     if(-not $quiet){Write-Host "`t authToken: $($PlexOnlineToken)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Update Channel: $ButlerUpdateChannel" -ForegroundColor Cyan}
                 }
+                $PlexToken=$PlexOnlineToken
                 if($ButlerUpdateChannel -eq "Public"){$DisablePlexPass=$true}
             }
 
@@ -494,13 +496,6 @@ Function Update-PlexMediaServer
             if($Plextoken){
                 $PlexServerUri="http://$($hostname):$PlexServerPort/?X-Plex-Token=$($PlexToken)"                    
                 $PlexServerSessionUri="http://$($hostname):$PlexServerPort/status/sessions/?X-Plex-Token=$($PlexToken)"                    
-#            }elseif($PlexOnlineToken){
-#                $PlexServerUri="http://$($hostname):$PlexServerPort/?X-Plex-Token=$($PlexOnlineToken)"
-#                if($ButlerUpdateChannel -eq "Beta"){                    
-#                    $PlexServerSessionUri="http://$($hostname):$PlexServerPort/status/sessions/?X-Plex-Token=$($PlexToken)"   
-#                }else{
-#                    $PlexServerSessionUri="http://$($hostname):$PlexServerPort/status/sessions"                                        
-#                }                 
             }else{
                 $PlexServerUri="http://$($hostname):$PlexServerPort/"
                 $PlexServerSessionUri="http://$($hostname):$PlexServerPort/status/sessions"                    
@@ -854,16 +849,28 @@ function Get-PlexToken{
     [CmdletBinding()]
     param(
     #
-    [Parameter(Position=0,
-    ValueFromPipelineByPropertyName=$true)] 
-    [string]$PlexLogin,
+    [Parameter(
+                Position=0,
+                ParameterSetName="Credential",
+                ValueFromPipelineByPropertyName=$true)]
+
+                [string]$PlexLogin,
+
     #
-    [Parameter(Position=1,
-    ValueFromPipelineByPropertyName=$true)]
-    [string]$PlexPassword,
-    [parameter(Mandatory = $False)]
-    [Switch]
-    $PassThru,
+    [Parameter(
+                Position=1,
+                ParameterSetName="Credential",
+                ValueFromPipelineByPropertyName=$true)]
+
+                [string]$PlexPassword,
+
+    #
+    [parameter(
+                Mandatory = $False,
+                ParameterSetName="PSCredential")]
+
+                [Switch]$PassThru,
+
     #
     [ValidateNotNull()]
     [System.Management.Automation.PSCredential]
@@ -876,8 +883,10 @@ function Get-PlexToken{
             $True
         }
         })]
-    [object]$Credential = [System.Management.Automation.PSCredential]::Empty 
+
+                [object]$Credential = [System.Management.Automation.PSCredential]::Empty 
     )
+
     [hashtable]$return=@{}
 
     
@@ -941,25 +950,42 @@ function Get-PlexToken{
 function Get-RestMethod{
     [CmdletBinding()]
     param(
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
-    # 
-    [string]$Uri,
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
-    # 
-    [object]$Headers,
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
-    # 
-    [string]$Method='Default',
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
-    # 
-    [switch]$UseBasicParsing,
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
-    # 
-    [int32]$TimeoutSec=30,
-    [parameter(Mandatory = $False)]
-    [Switch]
-    $PassThru
+    #
+    [Parameter(
+                ValueFromPipelineByPropertyName=$true)]
+
+                [string]$Uri,
+
+    [Parameter(
+                ValueFromPipelineByPropertyName=$true)]
+
+                [object]$Headers,
+
+    #
+    [Parameter(
+                ValueFromPipelineByPropertyName=$true)]
+
+                [string]$Method='Default',
+    
+    #
+    [Parameter(
+                ValueFromPipelineByPropertyName=$true)]
+                
+                [switch]$UseBasicParsing,
+
+    #
+    [Parameter(
+                ValueFromPipelineByPropertyName=$true)]
+
+                [int32]$TimeoutSec=30,
+
+    #
+    [parameter(
+                Mandatory = $False)]
+
+                [Switch]$PassThru
     )
+
     [hashtable]$return=@{}
 
     try {
