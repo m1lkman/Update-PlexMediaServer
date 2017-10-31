@@ -2,9 +2,9 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-   Module for managing Plex Media Server updates running Plex Server Service Wrapper (PlexService).
+   Updates systems running Plex Media Server and Plex Server Service (PlexService).
 .DESCRIPTION
-   Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or Beta(PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
+   Use this script to autoatically download and update Plex Media Server that use the Plex Server Service created by cjmurph (https://github.com/cjmurph/PmsService).
 .EXAMPLE Run Interactively and attempt to update from publicly available updates.
    Update-PlexMediaServer
 .EXAMPLE Force Upgrade/reinstall even if version is greater than or equal to
@@ -15,18 +15,18 @@
    Update-PlexMediaServer -PlexPass
 .EXAMPLE Run silently and attempt to update from PlexPass(Beta) available updates.
    Update-PlexMediaServer -PlexToken <Token> -Quiet
-.EXAMPLE Run Passive and check latest publicly available updates.
-   Update-PlexMediaServer -DisablePlexPass -Passive
+.EXAMPLE Run Passive and update using Server Online Authentication Token.
+   Update-PlexMediaServer -PlexServerToken -Passive
 .EXAMPLE
    Update-PlexMediaServer -PlexLogin <Email/ID> -PlexPassword <Password>
 .EXAMPLE
    Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL
 .EXAMPLE
-   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PlexMediaServer -UserName JDoe} 
+   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock {:Update-PlexMediaServer -UserName JDoe} 
 .EXAMPLE
-   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PlexMediaServer -UserName JDoe} 
+   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock {Update-PlexMediaServer -UserName JDoe} 
 .EXAMPLE
-   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock ${function:Update-PlexMediaServer -UserName JDoe} 
+   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock {Update-PlexMediaServer -UserName JDoe} 
 .NOTES
 
 .LINK
@@ -36,84 +36,82 @@ Function Update-PlexMediaServer
 {
     [CmdletBinding(SupportsShouldProcess,DefaultParameterSetName="ServerAuth")]
     param(
-    # Plex Authentication Token
+    # Plex Server Online Authentication Token
     [Parameter(
-                Position=0,
-                ValueFromPipelineByPropertyName=$true,
-                Mandatory=$false,
-                ParameterSetName="TokenAuth",
-                HelpMessage="Enter Plex Authentication Token (Use Get-PlexToken to get your token from Plex.tv")]
-    [ValidateScript({
-                if($_ -match "[0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z][0-z]"){
-                    $true
-                }
-                elseif(!($_)){
-                    $true
-                }
-                else{
-                    throw "Please provide a Plex Authentication Token matching the format abcde12345abcde12345 (20 alpha-numeric characters)."
-                }
-                })]
-    [Parameter(
-                Mandatory=$false,
-                ParameterSetName="EmailNotify")]
-    
-                [string]$PlexToken,
-    #
-    [Parameter(
-                Mandatory=$false,
                 ParameterSetName="ServerAuth",
+                Position=0,
+                Mandatory=$false,
                 HelpMessage="Enables Plex Server Authentication Token Discovery")]
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="EmailNotify")]
+                ParameterSetName="EmailNotify",
+                Position=0)]
 
                 [switch]$UseServerToken,
 
-    #
-
+    # Plex User Authentication Token
     [Parameter(
-                Position="0",
+                ParameterSetName="TokenAuth",
+                Position=0,
+                Mandatory=$true,
+                ValueFromPipelineByPropertyName=$true,
+                HelpMessage="Enter Plex Authentication Token (Use Get-PlexToken to get your token from Plex.tv")]
+    [ValidateScript({
+                if($_ -match "[0-9a-z]{20}"){
+                    $true
+                }else{
+                    throw "Please provide a Plex Authentication Token matching the format abcde12345abcde12345 (20 alpha-numeric characters)."
+                }
+                })]
+    [ValidateNotNull()]
+    [Parameter(
+                ParameterSetName="EmailNotify",
+                Position=0)]
+
+                [string]$PlexToken,
+
+    # Plex.tv Credentials with PSCredential
+    [Parameter(
+                ParameterSetName="CredAuth",
+                Position=0,
                 ValueFromPipelineByPropertyName=$true,
                 Mandatory=$true,
-                ParameterSetName="CredAuth",
                 HelpMessage="PSCredential")]
     [ValidateNotNull()]
     [System.Management.Automation.PSCredential]
     [System.Management.Automation.Credential()]    
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="EmailNotify")]
+                ParameterSetName="EmailNotify",
+                Position=0)]
 
                 [object]$Credential=[System.Management.Automation.PSCredential]::Empty,
 
     # 
     [Parameter(
-                Position="0",
-                ValueFromPipelineByPropertyName=$true,
                 ParameterSetName="TextAuth",
+                Position=0,
+                Mandatory=$true,
+                ValueFromPipelineByPropertyName=$true,
                 HelpMessage="Enter Plex.tv Email or ID")]
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="EmailNotify")]
-
+                ParameterSetName="EmailNotify",
+                Position=0)]
+                        
                 [string]$PlexLogin,
 
     # 
     [Parameter(
-                Position="1",
-                ValueFromPipelineByPropertyName=$true,
                 ParameterSetName="TextAuth",
+                Position=1,
+                ValueFromPipelineByPropertyName=$true,
                 HelpMessage="Enter Plex.tv Password")]
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="EmailNotify")]
+                ParameterSetName="EmailNotify",
+                Position=1)]
 
                 [string]$PlexPassword,
-    
+
     #  
     [Parameter(
-                Mandatory=$false,
                 HelpMessage="Disables PlexPass(Beta) Updates")]
 
                 [switch]$DisablePlexPass,
@@ -122,15 +120,11 @@ Function Update-PlexMediaServer
     [Parameter(
                 ValueFromPipelineByPropertyName=$true,
                 HelpMessage="Enter non-standard Plex Media Server Port, default is 32400")]
-    [Parameter(
-                Mandatory=$false,
-                ParameterSetName="EmailNotify")]
 
                 [int32]$PlexServerPort=32400,
 
     # Specify Username if Plex Media Server is running in a user context other than context of script execution
     [Parameter(
-                Mandatory=$false,
                 ValueFromPipelineByPropertyName=$true,
                 HelpMessage="Specify Windows Username when script is executing in a user context other than Plex Media Server/Plex Media Server Service Wrapper")]
 
@@ -138,127 +132,142 @@ Function Update-PlexMediaServer
 
     # 
     [Parameter(
-                Mandatory=$false,
+                ParameterSetName="LogFile",
+                Position=0,
+                Mandatory=$true,
                 ValueFromPipelineByPropertyName=$true,
-                ParameterSetName="Logfile",
                 HelpMessage="Enter Log File path, default is PSScriptRoot\Update-PlexMediaServer.log")]
+    [ValidateNotNull()]
     [Parameter(
-                Mandatory=$false,
+                ParameterSetName="ServerAuth")]
+    [Parameter(
+                ParameterSetName="TokenAuth")]
+    [Parameter(
+                ParameterSetName="CredAuth")]
+    [Parameter(
+                ParameterSetName="TextAuth")]
+    [Parameter(
                 ParameterSetName="EmailNotify")]
 
                 [string]$LogFile="$PSScriptRoot\Update-PlexMediaServer.log",
 
     # Force update 
     [Parameter(
-                Mandatory=$false,
                 HelpMessage="Forces Update installation regardless of installed version")]
 
                 [switch]$Force,
 
-    # passive 
+    # passive - minimal UI no prompts
     [Parameter(
-                Mandatory=$false,
                 ParameterSetName="Passive",
                 HelpMessage="Displays minimal UI with no prompts")]
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="EmailNotify")]
+                ParameterSetName="ServerAuth")]
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="Logfile")]
-
+                ParameterSetName="TokenAuth")]
+    [Parameter(
+                ParameterSetName="CredAuth")]
+    [Parameter(
+                ParameterSetName="TextAuth")]
+    [Parameter(
+                ParameterSetName="LogFile")]
+    [Parameter(
+                ParameterSetName="EmailNotify")]
+                
                 [switch]$Passive,
 
-    # quiet 
+    # quiet - no UI no prompts
     [Parameter(
-                Mandatory=$false,
                 ParameterSetName="Quiet",
                 HelpMessage="Display no UI and no prompts")]
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="EmailNotify")]
+                ParameterSetName="ServerAuth")]
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="Logfile")]
-
+                ParameterSetName="TokenAuth")]
+    [Parameter(
+                ParameterSetName="CredAuth")]
+    [Parameter(
+                ParameterSetName="TextAuth")]
+    [Parameter(
+                ParameterSetName="LogFile")]
+    [Parameter(
+                ParameterSetName="EmailNotify")]
+            
                 [switch]$Quiet,
 
     # For Email Notification configure all the below parameters in script or via command line 
     [Parameter(
-                Mandatory=$true,
                 ParameterSetName="EmailNotify",
+                Position=0,
+                Mandatory=$true,
                 HelpMessage="Enables email notification")]
-
+                                
                 [switch]$EmailNotify,
 
     # Attach log file if LogFile configured to notification 
     [Parameter(
-                Mandatory=$false,
                 ParameterSetName="EmailNotify",
                 HelpMessage="Attach logfile with email notification")]
     [Parameter(
-                Mandatory=$false,
-                ParameterSetName="Logfile")]
+                ParameterSetName="LogFile")]
 
                 [switch]$EmailLog,
 
     #
     [Parameter(
+                ParameterSetName="EmailNotify",
                 Mandatory=$true,
                 ValueFromPipelineByPropertyName=$true,
-                ParameterSetName="EmailNotify",
                 HelpMessage="Email notification recipient")]
 
                 [string]$SmtpTo,
 
     #
     [Parameter(
+                ParameterSetName="EmailNotify",
                 Mandatory=$true,
                 ValueFromPipelineByPropertyName=$true,
-                ParameterSetName="EmailNotify",
                 HelpMessage="Email notification sender")]
 
                 [string]$SmtpFrom,
 
     #
     [Parameter(
+                ParameterSetName="EmailNotify",
                 Mandatory=$true,
                 ValueFromPipelineByPropertyName=$true,
-                ParameterSetName="EmailNotify",
                 HelpMessage="SMTP Server Username")]
 
                 [string]$SmtpUser,
 
     #
     [Parameter(
+                ParameterSetName="EmailNotify",
                 Mandatory=$true,
                 ValueFromPipelineByPropertyName=$true,
-                ParameterSetName="EmailNotify",
                 HelpMessage="SMTP Server Password")]
 
                 [string]$SmtpPassword,
 
     #
     [Parameter(
+                ParameterSetName="EmailNotify",
                 Mandatory=$true,
                 ValueFromPipelineByPropertyName=$true,
-                ParameterSetName="EmailNotify",
                 HelpMessage="SMTP Server Name")]
 
                 [string]$SmtpServer,
 
     #
     [Parameter(
-                Mandatory=$false,
-                ValueFromPipelineByPropertyName=$true,
                 ParameterSetName="EmailNotify",
+                ValueFromPipelineByPropertyName=$true,
                 HelpMessage="SMTP Server Port")]
 
                 [int32]$SmtpPort,
 
     # Enable SSL for SMTP Authentication 
     [Parameter(
-                Mandatory=$false,
                 ParameterSetName="EmailNotify",
                 HelpMessage="Enables SSL for SMTP Authentication")]
 
@@ -266,6 +275,15 @@ Function Update-PlexMediaServer
     )
 
     begin{
+        switch($PSCmdlet.ParameterSetName){
+            "ServerAuth"{Write-Verbose "ParameterSetName: $_"}
+            "TokenAuth"{Write-Verbose "ParameterSetName: $_"}
+            "CredAuth"{Write-Verbose "ParameterSetName: $_"}
+            "TextAuth"{Write-Verbose "ParameterSetName: $_"}
+            default{Write-Verbose "ParameterSetName: $_"}
+            
+        }
+
         if($Logfile){if(Test-Path $LogFile){Remove-Item -Path $LogFile -Force -ErrorAction SilentlyContinue | Out-Null}}
         if($LogFile){Write-Log -Message "Update-PlexMedaiServer Sript Starting" -Path $LogFile -Level Info}
         New-PSDrive HKCU -PSProvider Registry -Root Registry::HKEY_CURRENT_USER | Out-Null
@@ -287,7 +305,7 @@ Function Update-PlexMediaServer
                     if($response.exception.Response){
                         if($LogFile){Write-Log -Message "Plex authentication token was not validated. Please verify or use Get-PlexToken to retrieve again. Server Response: $($response.exception.message)" -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Token Authentication Failed" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Please verify provided Plex Autentication Token or use Get-PlexToken to retrieve one." -ForegroundColor Cyan}
+                        if(-not $quiet){Write-Host "Please verify specified Plex Autentication Token or use Get-PlexToken to retrieve one." -ForegroundColor Cyan}
                     }else{
                         if($LogFile){Write-Log -Message "Unable to verify Plex authentication token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)" -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Unable to validate Token" -ForegroundColor Red}
@@ -366,7 +384,7 @@ Function Update-PlexMediaServer
                 }else{#non-interactive
                     if($PlexLogin -or $PlexPassword){
                         if($LogFile){Write-Log -Message "Unable to determine Plex Authentication Token missing Plex.tv username or password from command line. Unable to prompt for information when running in non-interactive Quiet mode." -Path $LogFile -Level Info}
-                        if(-not $quiet){Write-Host "Unable to determine Plex Authentication Token." -ForegroundColor Cyan}
+                        if(-not $quiet){Write-Host "Unable to determine Plex Authentication Token without additional imput in passive/quiet mode." -ForegroundColor Cyan}
                         if(-not $quiet){Write-Host "     1. Configure PlexToken variable in script. Use Get-PlexToken." -ForegroundColor Cyan}
                         if(-not $quiet){Write-Host "     2. Specify your token in the command line, i.e. -plextoken <Token>" -ForegroundColor Cyan}
                         if(-not $quiet){Write-Host "     3. Specify your plex.tv username/ID and password in the command line, i.e. -PlexLogin <email/id> -PlexPassword <password>" -ForegroundColor Cyan}
@@ -380,7 +398,7 @@ Function Update-PlexMediaServer
             }
 
             #Begin Prcess Arguments
-            if($EnableNotify){
+            if($EmailNotify){
                 if($LogFile){Write-Log -Message "Email Notification enabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
             }
             if($DisablePlexPass){
@@ -456,7 +474,7 @@ Function Update-PlexMediaServer
                     if($response.exception.Response){
                         if($LogFile){Write-Log -Message "Plex Server Online Authentication Token was not validated. Please verify or use Get-PlexToken to retrieve again. Server Response: $($response.exception.message)" -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Server Online Token Authentication Failed" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Please verify provided Plex Server Online Autentication Token or use Get-PlexToken to retrieve one." -ForegroundColor Cyan}
+                        if(-not $quiet){Write-Host "Please verify specified Plex Server Online Autentication Token or use Get-PlexToken to retrieve one." -ForegroundColor Cyan}
                     }else{
                         if($LogFile){Write-Log -Message "Unable to verify Plex Server Online Authentication Token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)" -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Unable to validate Server Online Token" -ForegroundColor Red}
@@ -596,7 +614,12 @@ Function Update-PlexMediaServer
             if([Version]$installedVersion -eq [Version]$releaseVersion){
                 if($LogFile){Write-Log -Message "Version up-to-date. Installed version ($installedVersion) equal to available version ($releaseVersion)." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Running the latest version $installedVersion." -ForegroundColor Cyan}
-                if($force) {$UpdateRequired=$true}
+                if($force){
+                    $UpdateRequired=$true
+                }else{
+                    if(-not $quiet){Write-Host "Latest Version $installedVersion already installed. Use -force to force installation." -ForegroundColor Cyan}
+                    return
+                }
                 $ArgumentList = "/repair" 
             }elseif([version]$installedVersion -lt [version]$releaseVersion){
                 $UpdateRequired=$true
@@ -606,17 +629,17 @@ Function Update-PlexMediaServer
             }else{
                 if($LogFile){Write-Log -Message "Installed version ($installedVersion) less than available version ($releaseVersion)." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Running later than Update version" -ForegroundColor Cyan}
-                if($force) {$UpdateRequired=$true}
+                if($force){
+                    $UpdateRequired=$true
+                }else{
+                    if(-not $quiet){Write-Host "Later Version $installedVersion installed. Use -force to force installation." -ForegroundColor Cyan}
+                    return
+                }
                 $ArgumentList = "/install" 
             }
             if(-not $quiet){Write-Host "`t PlexPass(Beta): $PlexPassStatus" -ForegroundColor Cyan}
             if(-not $quiet){Write-Host "`t Update Version: $releaseVersion" -ForegroundColor Cyan}
             if(-not $quiet){Write-Host "`t Update Build: $releaseBuild" -ForegroundColor Cyan}
-
-            if(-not $UpdateRequired){
-                if(-not $quiet){Write-Host "Latest Version $installedVersion already installed. Use -force to force installation." -ForegroundColor Cyan}
-                return
-            }
 
             ### Begin Update ###
 
@@ -877,16 +900,16 @@ function Get-PlexToken{
     param(
     #
     [Parameter(
-                Position=0,
                 ParameterSetName="Credential",
+                Position=0,
                 ValueFromPipelineByPropertyName=$true)]
 
                 [string]$PlexLogin,
 
     #
     [Parameter(
-                Position=1,
                 ParameterSetName="Credential",
+                Position=1,
                 ValueFromPipelineByPropertyName=$true)]
 
                 [string]$PlexPassword,
