@@ -892,13 +892,14 @@ function Get-PlexToken{
                 [string]$PlexPassword,
 
     #
-    [parameter(
-                Mandatory = $False,
-                ParameterSetName="PSCredential")]
+    [parameter()]
 
                 [Switch]$PassThru,
 
     #
+    [parameter(
+                ParameterSetName="PSCredential",
+                Position=0)]
     [ValidateNotNull()]
     [System.Management.Automation.PSCredential]
     [System.Management.Automation.Credential()]
