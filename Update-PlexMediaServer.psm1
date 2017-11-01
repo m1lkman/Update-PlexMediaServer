@@ -173,6 +173,13 @@ Function Update-PlexMediaServer
         [switch]
         $Force,
 
+    # Cleanup old updates 
+    [Parameter(
+        HelpMessage="Enables cleanup of old updates. Set number of Updates to keep in Updates folder.")]
+
+        [int32]
+        $UpdateCleanup,
+
     # passive - minimal UI no prompts
     [Parameter(
         ParameterSetName="Passive",
@@ -431,6 +438,9 @@ Function Update-PlexMediaServer
             if($DisablePlexPass){
                 if($LogFile){Write-Log -Message "PlexPass(Beta) Updates disabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
             }
+            if($UpdatesCleanup){
+                if($LogFile){Write-Log -Message "Update Cleanup enabled via command-line (-UpdateCleanup)" -Path $LogFile -Level Info}
+            }
 
             if($PlexUser){
                 if(-not $quiet){Write-Host "`t Username: $($PlexUser[0].user.username)" -ForegroundColor Cyan}
@@ -456,7 +466,7 @@ Function Update-PlexMediaServer
             }
 
             #Locate Plex Media Server.exe and Get Current Version and determin username
-            if(Get-Process "Plex Media Server" -IncludeUserName -OutVariable PMSProcess -ErrorAction SilentlyContinue | Select-Object Path | Get-ItemProperty -OutVariable PMSExeFile ){
+            if(Get-Process "Plex Media Server" -IncludeUserName -OutVariable PMSProcess -ErrorAction SilentlyContinue | Select-Object Path | Get-ItemProperty -OutVariable PMSExeFile -ErrorAction SilentlyContinue ){
                 if($LogFile){Write-Log -Message "Plex Media Server process running $($PMSProcess.Path) as User $($PMSProcess.UserName)" -Path $LogFile -Level Info}
                 if($LogFile){Write-Log -Message "Plex Media Server found $PMSExeFile" -Path $LogFile -Level Info}
                 If (-not $UserName){$UserName=$PMSProcess.UserName}
@@ -801,7 +811,7 @@ Function Update-PlexMediaServer
                 if($LogFile){Write-Log -Message "Failed to install update. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}
             }
 
-            #cleanup after install
+            #cleanup Run keys after install
             if($(Get-ItemProperty "HKU:\$UserSID\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Plex Media Server" -ErrorAction SilentlyContinue)){
                 if($LogFile){Write-Log -Message "Removing HKU:\$UserSID\Software\Microsoft\Windows\CurrentVersion\Run\Plex Media Server value." -Path $LogFile -Level Info}
                 Remove-ItemProperty "HKU:\$UserSID\Software\Microsoft\Windows\CurrentVersion\Run\" -Name "Plex Media Server" -Force
@@ -813,6 +823,35 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "`t Startup/Run Keys: Removed" -ForegroundColor Cyan}
             }
 
+            if($UpdateCleanup){
+                if(Get-ChildItem "$LocalAppDataPath\Plex Media Server\Updates" -Filter '*.exe' -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending -OutVariable PmsUpdates){
+                    if($LogFile){Write-Log -Message "Checking Updates folder for Cleanup." -Path $LogFile -Level Info}
+                    if($PmsUpdates.Count -gt $UpdateCleanup){
+                        if($LogFile){Write-Log -Message "Cleanup threshold reached, executing cleanup of $($PmsUpdates.Count-$UpdateCleanup) updates" -Path $LogFile -Level Info}
+                        foreach($PmsUpdate in $PmsUpdates){
+                            if($PmsUpdates.IndexOf($PmsUpdate) -lt $UpdateCleanup){continue}
+                            try{
+                                Remove-Item ("$LocalAppDataPath\Plex Media Server\Updates\" + ($PmsUpdate.FullName).Replace("$LocalAppDataPath\Plex Media Server\Updates\",'').split("\")[0]) -Recurse -Force -ErrorAction SilentlyContinue
+                            }catch{
+                                Write-Verbose "Error removing folder $("$LocalAppDataPath\Plex Media Server\Updates\" + ($PmsUpdate.FullName).Replace("$LocalAppDataPath\Plex Media Server\Updates\",'').split("\")[0]) Error: $($_.exception.GetType().Name)"
+                                $return=$_.Exception
+                            }
+                            if($return){
+                                if($LogFile){Write-Log -Message "Error removing folder $("$LocalAppDataPath\Plex Media Server\Updates\" + ($PmsUpdate.FullName).Replace("$LocalAppDataPath\Plex Media Server\Updates\",'').split("\")[0]) Error: $($return.GetType().Name)" -Path $LogFile -Level Warn}
+                                $return=$null
+                            }else{
+                                if($LogFile){Write-Log -Message "Removed folder $("$LocalAppDataPath\Plex Media Server\Updates\" + ($PmsUpdate.FullName).Replace("$LocalAppDataPath\Plex Media Server\Updates\",'').split("\")[0])" -Path $LogFile -Level Info}
+                            }
+                        }
+                        Write-Host "`t Updates Removed: $($PmsUpdates.Count-$UpdateCleanup)" -ForegroundColor Cyan
+                    }else{
+                        if($LogFile){Write-Log -Message "Update Count does not meet Cleanup threshold ($UpdateCleanup)" -Path $LogFile -Level Info}
+                    }
+                }else{
+                    Write-Warning "Unable to determine Updates Count for cleanup"
+                }
+            }
+            
             #Start Plex Media Server Service (PlexService)
             if($PmsService.status -eq 'Stopped'){
                 if(-not $quiet){Write-Host "Starting Plex Media Server Service (PlexService)..." -ForegroundColor Cyan -NoNewline}
@@ -887,7 +926,7 @@ Function Update-PlexMediaServer
                     if($LogFile){Write-Log -Message "Sending Email Notification to $SmtpTo with log attached." -Path $LogFile -Level Info}
                     if(Send-ToEmail -SmtpFrom $SmtpFrom -SmtpTo $SmtpTo -Subject "Plex Media Server Updated on $env:COMPUTERNAME" `
                         -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
-                        -EnableSSL $EnableSSL -attachmentpath $LogFile -IsBodyHtml $true -ErrorAction SilentlyContinue){
+                        -EnableSSL $EnableSSL -attachmentpath $LogFile -IsBodyHtml $true -PassThru -ErrorAction SilentlyContinue){
                         if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
@@ -898,7 +937,7 @@ Function Update-PlexMediaServer
                     if($LogFile){Write-Log -Message "Sending Email Notification to $SmtpTo." -Path $LogFile -Level Info}
                     if(Send-ToEmail -SmtpFrom $SmtpFrom -SmtpTo $SmtpTo -Subject "Plex Media Server updated on $env:COMPUTERNAME" `
                         -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
-                        -EnableSSL $EnableSSL -IsBodyHtml $true -ErrorAction SilentlyContinue){
+                        -EnableSSL $EnableSSL -IsBodyHtml $true -PassThru -ErrorAction SilentlyContinue){
                             if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                             if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
@@ -1090,7 +1129,7 @@ function Get-RestMethod{
 }
 
 
-function Send-ToEmail([string]$SmtpFrom, [string]$SmtpTo, [string]$Subject, [string]$Body, [string]$attachmentpath, [string]$SmtpUser, [string]$SmtpPassword, [string]$SmtpServer, [string]$SmtpPort, [bool]$EnableSSL, [bool]$IsBodyHtml){
+function Send-ToEmail([string]$SmtpFrom, [string]$SmtpTo, [string]$Subject, [string]$Body, [string]$attachmentpath, [string]$SmtpUser, [string]$SmtpPassword, [string]$SmtpServer, [string]$SmtpPort, [bool]$EnableSSL, [bool]$IsBodyHtml, [switch]$PassThru){
 
     $message = new-object Net.Mail.MailMessage;
     $message.From = "$SmtpFrom";
@@ -1109,7 +1148,7 @@ function Send-ToEmail([string]$SmtpFrom, [string]$SmtpTo, [string]$Subject, [str
     try{
         $smtp.send($message);
     }catch{
-        return $false
+        if($PassThru){return $_.exception}else{return $false}
     }finally{
         if($attachmentpath){$attachment.Dispose();}
     }
