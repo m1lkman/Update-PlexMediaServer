@@ -28,7 +28,11 @@ All parameters can be specified either at the command-line or set in the Paramet
 Get-Help Update-PlexMediaServer
 
 SYNTAX
-    Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+    Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-WhatIf] [-Confirm]  [<CommonParameters>]
+
+    Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+
+    Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Passive] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
     Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-Passive] [-Quiet] [-EmailLog] [-SmtpPort <int>] [-EnableSSL] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
@@ -40,9 +44,6 @@ SYNTAX
 
     Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Passive] [-Quiet] [-EmailLog] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-    Update-PlexMediaServer [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Passive] [-WhatIf] [-Confirm]  [<CommonParameters>]
-
-    Update-PlexMediaServer [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
 ```
 ### Examples
 For local interactive default execution using Plex Server Online token (requires Plex Server is logged in and Claimed) to authenticate to Plex.tv for updates (will honor Plex Server Update Channel Setting):
