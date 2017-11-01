@@ -38,240 +38,267 @@ Function Update-PlexMediaServer
     param(
     # Plex Server Online Authentication Token
     [Parameter(
-                ParameterSetName="ServerAuth",
-                Position=0,
-                Mandatory=$false,
-                HelpMessage="Enables Plex Server Authentication Token Discovery")]
+        ParameterSetName="ServerAuth",
+        Position=0,
+        Mandatory=$false,
+        HelpMessage="Enables Plex Server Authentication Token Discovery")]
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Position=0)]
+        ParameterSetName="EmailNotify",
+        Position=0)]
+    [Parameter(
+        ParameterSetName="Passive",
+        Position=0)]
+    [Parameter(
+        ParameterSetName="Quiet",
+        Position=0)]
 
-                [switch]$UseServerToken,
+        [switch]
+        $UseServerToken,
 
     # Plex User Authentication Token
     [Parameter(
-                ParameterSetName="TokenAuth",
-                Position=0,
-                Mandatory=$true,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="Enter Plex Authentication Token (Use Get-PlexToken to get your token from Plex.tv")]
+        ParameterSetName="TokenAuth",
+        Position=0,
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Enter Plex Authentication Token (Use Get-PlexToken to get your token from Plex.tv")]
     [ValidateScript({
-                if($_ -match "[0-9a-z]{20}"){
-                    $true
-                }else{
-                    throw "Please provide a Plex Authentication Token matching the format abcde12345abcde12345 (20 alpha-numeric characters)."
-                }
-                })]
+        if($_ -match "[0-9a-z]{20}"){
+            $true
+        }else{
+            throw "Please provide a Plex Authentication Token matching the format abcde12345abcde12345 (20 alpha-numeric characters)."
+        }
+        })]
     [ValidateNotNull()]
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Position=0)]
+        ParameterSetName="EmailNotify",
+        Position=0)]
 
-                [string]$PlexToken,
+        [string]
+        $PlexToken,
 
     # Plex.tv Credentials with PSCredential
     [Parameter(
-                ParameterSetName="CredAuth",
-                Position=0,
-                ValueFromPipelineByPropertyName=$true,
-                Mandatory=$true,
-                HelpMessage="PSCredential")]
+        ParameterSetName="CredAuth",
+        Position=0,
+        ValueFromPipelineByPropertyName=$true,
+        Mandatory=$true,
+        HelpMessage="PSCredential")]
     [ValidateNotNull()]
     [System.Management.Automation.PSCredential]
     [System.Management.Automation.Credential()]    
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Position=0)]
+        ParameterSetName="EmailNotify",
+        Position=0)]
 
-                [object]$Credential=[System.Management.Automation.PSCredential]::Empty,
+        [object]
+        $Credential=[System.Management.Automation.PSCredential]::Empty,
 
     # 
     [Parameter(
-                ParameterSetName="TextAuth",
-                Position=0,
-                Mandatory=$true,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="Enter Plex.tv Email or ID")]
+        ParameterSetName="TextAuth",
+        Position=0,
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Enter Plex.tv Email or ID")]
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Position=0)]
+        ParameterSetName="EmailNotify",
+        Position=0)]
                         
-                [string]$PlexLogin,
+        [string]
+        $PlexLogin,
 
     # 
     [Parameter(
-                ParameterSetName="TextAuth",
-                Position=1,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="Enter Plex.tv Password")]
+        ParameterSetName="TextAuth",
+        Position=1,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Enter Plex.tv Password")]
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Position=1)]
+        ParameterSetName="EmailNotify",
+        Position=1)]
 
-                [string]$PlexPassword,
+        [string]
+        $PlexPassword,
 
     #  
     [Parameter(
-                HelpMessage="Disables PlexPass(Beta) Updates")]
+        HelpMessage="Disables PlexPass(Beta) Updates")]
 
-                [switch]$DisablePlexPass,
+        [switch]
+        $DisablePlexPass,
 
     #
     [Parameter(
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="Enter non-standard Plex Media Server Port, default is 32400")]
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Enter non-standard Plex Media Server Port, default is 32400")]
 
-                [int32]$PlexServerPort=32400,
+        [int32]
+        $PlexServerPort=32400,
 
     # Specify Username if Plex Media Server is running in a user context other than context of script execution
     [Parameter(
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="Specify Windows Username when script is executing in a user context other than Plex Media Server/Plex Media Server Service Wrapper")]
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Specify Windows Username when script is executing in a user context other than Plex Media Server/Plex Media Server Service Wrapper")]
 
-                [string]$UserName,
+        [string]
+        $UserName,
 
     # 
     [Parameter(
-                ParameterSetName="LogFile",
-                Position=0,
-                Mandatory=$true,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="Enter Log File path, default is PSScriptRoot\Update-PlexMediaServer.log")]
+        ParameterSetName="LogFile",
+        Position=0,
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Enter Log File path, default is PSScriptRoot\Update-PlexMediaServer.log")]
     [ValidateNotNull()]
     [Parameter(
-                ParameterSetName="ServerAuth")]
+        ParameterSetName="ServerAuth")]
     [Parameter(
-                ParameterSetName="TokenAuth")]
+        ParameterSetName="TokenAuth")]
     [Parameter(
-                ParameterSetName="CredAuth")]
+        ParameterSetName="CredAuth")]
     [Parameter(
-                ParameterSetName="TextAuth")]
+        ParameterSetName="TextAuth")]
     [Parameter(
-                ParameterSetName="EmailNotify")]
+        ParameterSetName="EmailNotify")]
 
-                [string]$LogFile="$PSScriptRoot\Update-PlexMediaServer.log",
+        [string]
+        $LogFile="$PSScriptRoot\Update-PlexMediaServer.log",
 
     # Force update 
     [Parameter(
-                HelpMessage="Forces Update installation regardless of installed version")]
+        HelpMessage="Forces Update installation regardless of installed version")]
 
-                [switch]$Force,
+        [switch]
+        $Force,
 
     # passive - minimal UI no prompts
     [Parameter(
-                ParameterSetName="Passive",
-                HelpMessage="Displays minimal UI with no prompts")]
+        ParameterSetName="Passive",
+        HelpMessage="Displays minimal UI with no prompts")]
+#    [Parameter(
+#        ParameterSetName="ServerAuth")]
     [Parameter(
-                ParameterSetName="ServerAuth")]
+        ParameterSetName="TokenAuth")]
     [Parameter(
-                ParameterSetName="TokenAuth")]
+        ParameterSetName="CredAuth")]
     [Parameter(
-                ParameterSetName="CredAuth")]
+        ParameterSetName="TextAuth")]
     [Parameter(
-                ParameterSetName="TextAuth")]
+        ParameterSetName="LogFile")]
     [Parameter(
-                ParameterSetName="LogFile")]
-    [Parameter(
-                ParameterSetName="EmailNotify")]
+        ParameterSetName="EmailNotify")]
                 
-                [switch]$Passive,
+        [switch]
+        $Passive,
 
     # quiet - no UI no prompts
     [Parameter(
-                ParameterSetName="Quiet",
-                HelpMessage="Display no UI and no prompts")]
+        ParameterSetName="Quiet",
+        HelpMessage="Display no UI and no prompts")]
+#    [Parameter(
+#        ParameterSetName="ServerAuth")]
     [Parameter(
-                ParameterSetName="ServerAuth")]
+        ParameterSetName="TokenAuth")]
     [Parameter(
-                ParameterSetName="TokenAuth")]
+        ParameterSetName="CredAuth")]
     [Parameter(
-                ParameterSetName="CredAuth")]
+        ParameterSetName="TextAuth")]
     [Parameter(
-                ParameterSetName="TextAuth")]
+        ParameterSetName="LogFile")]
     [Parameter(
-                ParameterSetName="LogFile")]
-    [Parameter(
-                ParameterSetName="EmailNotify")]
+        ParameterSetName="EmailNotify")]
             
-                [switch]$Quiet,
+        [switch]
+        $Quiet,
 
     # For Email Notification configure all the below parameters in script or via command line 
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Position=0,
-                Mandatory=$true,
-                HelpMessage="Enables email notification")]
+        ParameterSetName="EmailNotify",
+        Position=0,
+        Mandatory=$true,
+        HelpMessage="Enables email notification")]
                                 
-                [switch]$EmailNotify,
+        [switch]
+        $EmailNotify,
 
     # Attach log file if LogFile configured to notification 
     [Parameter(
-                ParameterSetName="EmailNotify",
-                HelpMessage="Attach logfile with email notification")]
+        ParameterSetName="EmailNotify",
+        HelpMessage="Attach logfile with email notification")]
     [Parameter(
-                ParameterSetName="LogFile")]
+        ParameterSetName="LogFile")]
 
-                [switch]$EmailLog,
+        [switch]
+        $EmailLog,
 
     #
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Mandatory=$true,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="Email notification recipient")]
+        ParameterSetName="EmailNotify",
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Email notification recipient")]
 
-                [string]$SmtpTo,
-
-    #
-    [Parameter(
-                ParameterSetName="EmailNotify",
-                Mandatory=$true,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="Email notification sender")]
-
-                [string]$SmtpFrom,
+        [string]
+        $SmtpTo,
 
     #
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Mandatory=$true,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="SMTP Server Username")]
+        ParameterSetName="EmailNotify",
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Email notification sender")]
 
-                [string]$SmtpUser,
-
-    #
-    [Parameter(
-                ParameterSetName="EmailNotify",
-                Mandatory=$true,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="SMTP Server Password")]
-
-                [string]$SmtpPassword,
+        [string]
+        $SmtpFrom,
 
     #
     [Parameter(
-                ParameterSetName="EmailNotify",
-                Mandatory=$true,
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="SMTP Server Name")]
+        ParameterSetName="EmailNotify",
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SMTP Server Username")]
 
-                [string]$SmtpServer,
+        [string]
+        $SmtpUser,
 
     #
     [Parameter(
-                ParameterSetName="EmailNotify",
-                ValueFromPipelineByPropertyName=$true,
-                HelpMessage="SMTP Server Port")]
+        ParameterSetName="EmailNotify",
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SMTP Server Password")]
 
-                [int32]$SmtpPort,
+        [string]
+        $SmtpPassword,
+
+    #
+    [Parameter(
+        ParameterSetName="EmailNotify",
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SMTP Server Name")]
+
+        [string]
+        $SmtpServer,
+
+    #
+    [Parameter(
+        ParameterSetName="EmailNotify",
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SMTP Server Port")]
+
+        [int32]
+        $SmtpPort,
 
     # Enable SSL for SMTP Authentication 
     [Parameter(
-                ParameterSetName="EmailNotify",
-                HelpMessage="Enables SSL for SMTP Authentication")]
+        ParameterSetName="EmailNotify",
+        HelpMessage="Enables SSL for SMTP Authentication")]
 
-                [switch]$EnableSSL
+        [switch]
+        $EnableSSL
     )
 
     begin{
