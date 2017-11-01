@@ -83,7 +83,7 @@ or enable email notifications with custom SMTP port and SSL authentication:
 Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL
 ```
 ### Scheduled Task Example (putting it all together)
-Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use the default execution menthod leveraging my Server's Online Authentication Token to install the latest PlexPass updates and enable email notification.
+Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use the default execution menthod leveraging my Server's Online Authentication Token to install the latest PlexPass updates and enabled email notification.
 
 In Task Scheduler click on Create Task. Be sure to enable "Run whether user is logged on or not" and check "Run with highest privileges".
 
