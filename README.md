@@ -26,25 +26,24 @@ Import-Module Update-PlexMediaServer
 All parameters can be specified either at the command-line or set in the Parameters section of script file itself if you prefer. Edit at your own risk. See examples below for use cases. Use Get-Help cmdlet for details about parameters and usage.
 ```
 Get-Help Update-PlexMediaServer
+```
+Syntax
+```
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-SYNTAX
-    Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-    Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-    Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-EmailLog] [-SmtpPort <int>] [-EnableSSL] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-    Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-EmailLog] [-SmtpPort <int>] [-EnableSSL] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-    Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-    Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]
-    [<CommonParameters>]
+Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-    Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]
-    [<CommonParameters>]
-
-    Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-EmailLog] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-EmailLog] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
 
 ```
