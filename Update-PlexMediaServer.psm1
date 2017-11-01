@@ -95,6 +95,7 @@ Function Update-PlexMediaServer
         $Credential=[System.Management.Automation.PSCredential]::Empty,
 
     # 
+    [Alias("PlexID")]
     [Parameter(
         ParameterSetName="TextAuth",
         Position=0,
