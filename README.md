@@ -68,7 +68,7 @@ Update-PlexMediaServer -PlexToken <Token> -Quiet
 ```
 Execute passively using Plex Server Online Authentication Token (requires Plex Server is logged in and Clamied).
 ```
-Update-PlexMediaServer -UServerToken -Passive
+Update-PlexMediaServer -UseServerToken -Passive
 ```
 or silently check for PlexPass updates using Plex.tv login and password:
 ```
