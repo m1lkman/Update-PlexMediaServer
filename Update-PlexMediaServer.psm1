@@ -520,7 +520,7 @@ Function Update-PlexMediaServer
                     }
                     return
                 }else{
-                    if($LogFile){Write-Log -Message "Plex Server Online Authentication Token $PlexOnlineToken specified at command-line Validated" -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Plex Server Online Authentication Token $PlexOnlineToken Validated" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "Server Token Validated" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Username: $($PmsSettings.PlexOnlineUsername)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t authToken: $($PlexOnlineToken)" -ForegroundColor Cyan}
