@@ -99,7 +99,7 @@ Configure a new trigger to occur at a time and frequency when it's most likely t
 
 When setting up the action use the below to fill in the dialogs.
 
-<img src="/../ScreenShots/Edit%20Action.png"/>
+<img src="/../ScreenShots/New%20Action.png"/>
 
 Program/script
 ```
