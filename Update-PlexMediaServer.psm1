@@ -520,7 +520,7 @@ Function Update-PlexMediaServer
                     }
                     return
                 }else{
-                    if($LogFile){Write-Log -Message "Plex Server Online Authentication Token $PlexOnlineToken specified at command-line Validated" -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Plex Server Online Authentication Token $PlexOnlineToken Validated" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "Server Token Validated" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Username: $($PmsSettings.PlexOnlineUsername)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t authToken: $($PlexOnlineToken)" -ForegroundColor Cyan}
@@ -703,7 +703,7 @@ Function Update-PlexMediaServer
                     if($LogFile){Write-Log -Message "Downloading Plex Media Server for Windows ($releaseVersion-$releaseBuild)" -Path $LogFile -Level Info}
                 }
                 if([int](Invoke-WebRequest -Headers $headers -Uri $releaseUrl -OutFile "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe" -PassThru -OutVariable response).StatusCode -eq 200){
-                    if($LogFile){Write-Log -Message "Download of $LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe completed. StatusCode: $response.StatusCode" -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Download of $LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe completed. StatusCode: $([int]$response.StatusCode)" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "Completed" -ForegroundColor Cyan}
                     Write-Verbose "WebRequest result $([int]$response.StatusCode)"
                 }else{
