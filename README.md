@@ -137,7 +137,7 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
   
 ```v2.0.2 2017.11.8 (Updates by m1lkman)```
   * Corrected logging error causing large log file
-  
+
 ```v2.0.1 2017.11.1 (Updates by m1lkman)```
   * Corrected some error handling when PMS exe was not detected
   * Added -UpdateCleanup parameter and logic to remove old updates from updates folder
