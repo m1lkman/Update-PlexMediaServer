@@ -624,7 +624,7 @@ Function Update-PlexMediaServer
             if(-not $quiet){Write-Host "Checking Plex Media Server Service Wrapper (PlexService) Status..." -ForegroundColor Cyan -NoNewline}
             if(Get-ItemProperty $((Get-WmiObject win32_service -ErrorAction SilentlyContinue|?{$_.name -eq "PlexService"}).PathName).Replace("`"","") -OutVariable PmsServiceFile -ErrorAction SilentlyContinue){
                 if(Get-Service PlexService -ErrorAction SilentlyContinue -OutVariable PmsService){
-                    if($LogFile){Write-Log -Message "Found Plex Media Server Service Wrapper (PlexService) Installed." -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Found Plex Media Server Service Wrapper (PlexService) Installed (Version: $($PmsServiceFile.VersionInfo.FileVersion))." -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "$($PmsService.Status)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Path: $PmsServiceFile" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Version: $($PmsServiceFile.VersionInfo.FileVersion)" -ForegroundColor Cyan}
