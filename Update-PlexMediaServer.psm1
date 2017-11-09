@@ -330,7 +330,7 @@ Function Update-PlexMediaServer
         }
 
         if($Logfile){if(Test-Path $LogFile){Remove-Item -Path $LogFile -Force -ErrorAction SilentlyContinue | Out-Null}}
-        if($LogFile){Write-Log -Message "Update-PlexMedaiServer Sript Starting" -Path $LogFile -Level Info}
+        if($LogFile){Write-Log -Message "Update-PlexMediaServer Starting" -Path $LogFile -Level Info}
         New-PSDrive HKCU -PSProvider Registry -Root Registry::HKEY_CURRENT_USER | Out-Null
         New-PSDrive HKLM -PSProvider Registry -Root Registry::HKEY_LOCAL_MACHINE | Out-Null
         New-PSDrive HKU -PSProvider Registry -Root Registry::HKEY_USERS | Out-Null
@@ -977,7 +977,7 @@ Function Update-PlexMediaServer
         }
     }
     end{
-        if($LogFile){Write-Log -Message "Update-PlexMedaiServer Sript Completed" -Path $LogFile -Level Info}
+        if($LogFile){Write-Log -Message "Update-PlexMediaServer Completed" -Path $LogFile -Level Info}
     }
 }
 
