@@ -321,11 +321,11 @@ Function Update-PlexMediaServer
 
     begin{
         switch($PSCmdlet.ParameterSetName){
-            "ServerAuth"{Write-Verbose "ParameterSetName: $_"}
-            "TokenAuth"{Write-Verbose "ParameterSetName: $_"}
-            "CredAuth"{Write-Verbose "ParameterSetName: $_"}
-            "TextAuth"{Write-Verbose "ParameterSetName: $_"}
-            default{Write-Verbose "ParameterSetName: $_"}
+            "ServerAuth"{Write-Debug "ParameterSetName: $_"}
+            "TokenAuth"{Write-Debug "ParameterSetName: $_"}
+            "CredAuth"{Write-Debug "ParameterSetName: $_"}
+            "TextAuth"{Write-Debug "ParameterSetName: $_"}
+            default{Write-Debug "ParameterSetName: $_"}
             
         }
 
