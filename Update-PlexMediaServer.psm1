@@ -568,13 +568,11 @@ Function Update-PlexMediaServer
 
             ### Validate Plex Web Availability ###
             if(-not $quiet){Write-Host "Checking Plex Web Status..." -ForegroundColor Cyan -NoNewline}
-            if(Get-RestMethod -Uri http://ipinfo.io/json -ErrorAction SilentlyContinue -PassThru -OutVariable HostNameResponse | Select-Object -ExpandProperty hostname -ErrorAction SilentlyContinue -OutVariable hostname){
-                if($LogFile){Write-Log -Message "HostName is $hostname" -Path $LogFile -Level Info}
-            }else{
-                if($LogFile){Write-Log -Message "Unable to determin Hostname. $($HostNameResponse.exception.message) Error: ($($HostNameResponse.exception.HResult))" -Path $LogFile -Level Info}
-                if(-not $quiet){Write-Host "Unable to determine HostName" -ForegroundColor Red}
-                return
+            while((Get-RestMethod -Uri http://ipinfo.io/json -ErrorAction SilentlyContinue -PassThru -OutVariable HostNameResponse | Select-Object -ExpandProperty hostname -ErrorAction SilentlyContinue -OutVariable hostname).exception){
+                if($LogFile){Write-Log -Message "Unable to determin Hostname, retrying. $($HostNameResponse.exception.message) Error: ($($HostNameResponse.exception.HResult))" -Path $LogFile -Level Info}
+                Start-Sleep -Milliseconds 5
             }
+            if($LogFile){Write-Log -Message "HostName is $hostname" -Path $LogFile -Level Info}
 
             if($Plextoken){
                 $PlexServerUri="http://$($hostname):$PlexServerPort/?X-Plex-Token=$($PlexToken)"                    
