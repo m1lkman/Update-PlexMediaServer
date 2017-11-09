@@ -808,12 +808,12 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Restart Required: False" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Plex Media Server update completed with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 3010 ){
                 if(-not $quiet){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
-                if(-not $quiet){Write-Host "`t Restart Required: True" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Plex Media Server update completed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
+                if(-not $quiet){Write-Host "`t Restart zequired: True" -ForegroundColor Cyan}
+                if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 1602 ){
                 if(-not $quiet){Write-Host "Cancelled" -ForegroundColor red}
                 if(-not $quiet){Write-Host "`t Update was cancelled by user. ExitCode: $($Process.ExitCode)" -ForegroundColor Red}
@@ -900,7 +900,7 @@ Function Update-PlexMediaServer
             if(-not $quiet){Write-Host "Verifying Plex Web Status..." -ForegroundColor Cyan -NoNewline}
             if((Get-RestMethod -Uri $PlexServerUri -PassThru -OutVariable PlexServer -ErrorAction SilentlyContinue).exception){
                 if($PlexServer.exception.Response){
-                    if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri. Message: $($PlexServer.exception.Message) (Error: $($PlexServer.exception.HResult)) StatusDescription: $($PlexServer.exception.Response.StatusDescription) (StatusCode: $($return.exception.Response.StatusCode.value__))" -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Plex Web unavailable at $PlexServerUri. Message: $($PlexServer.exception.Message) (Error: $($PlexServer.exception.HResult)) StatusDescription: $($PlexServer.exception.Response.StatusDescription) (StatusCode: $($return.exception.Response.StatusCode.value__))" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host $PlexServer.exception.message -ForegroundColor Red}
                 }else{
                     if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri" -Path $LogFile -Level Info}
@@ -919,6 +919,7 @@ Function Update-PlexMediaServer
             }else{
                 if(-not $quiet){Write-Host "Available" -ForegroundColor Cyan}
                 if($PlexServer[0].MediaContainer){
+                    if($LogFile){Write-Log -Message "Plex Web avaialble at $PlexServerUri. Friendly Name: $($PlexServer[0].MediaContainer.friendlyName) Username: $($PlexServer[0].MediaContainer.myPlexUserName) Signin State: $($PlexServer[0].MediaContainer.myPlexSigninState)" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "`t Friendly Name: $($PlexServer[0].MediaContainer.friendlyName)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Username: $($PlexServer[0].MediaContainer.myPlexUserName)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Signin State: $($PlexServer[0].MediaContainer.myPlexSigninState)" -ForegroundColor Cyan}
