@@ -35,15 +35,15 @@ Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <
 
 Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-EmailLog] [-SmtpPort <int>] [-EnableSSL] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
 Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-EmailLog] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 ### Examples
 For local interactive default execution using Plex Server Online token (requires Plex Server is logged in and Claimed) to authenticate to Plex.tv for updates (will honor Plex Server Update Channel Setting):
@@ -87,7 +87,7 @@ or enable email notifications with custom SMTP port and SSL authentication:
 Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL
 ```
 ### Scheduled Task Example (putting it all together)
-Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use the default execution menthod leveraging my server's Online Authentication Token to install the latest PlexPass updates. I also enabled email notification and update cleanup to remove all previous updates except the latest 2.
+Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use the default execution menthod leveraging my server's Online Authentication Token to install the latest PlexPass updates. I also enabled email notification with log included and update cleanup to remove all previous updates except the latest 2.
 
 In Task Scheduler click on Create Task. Be sure to enable "Run whether user is logged on or not" and check "Run with highest privileges".
 
@@ -107,7 +107,7 @@ powershell.exe
 ```
 Add arguments
 ```
--Command "{& Update-PlexMediaServer -Quiet -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL -UpdateCleanup 2}
+-Command "{& Update-PlexMediaServer -Quiet -EmailNotify -IncludeLog -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL -UpdateCleanup 2}
 ```
 
 ### Find Your Plex Authentication Token (Get-PlexToken)
@@ -131,6 +131,10 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 * A: That is entirely up to you! Create some issues or fork and fix/add whe you need.
 
 ## Version Information
+```v2.0.3 2017.11.9 (Updates by m1lkman)```
+  * Added IncludeLog parameter for including log text in notification (renamed EmailLog AttachLog)
+  * Improved notification logic and general logging content
+  
 ```v2.0.2 2017.11.8 (Updates by m1lkman)```
   * Corrected logging error causing large log file
 

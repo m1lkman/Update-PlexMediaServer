@@ -231,7 +231,7 @@ Function Update-PlexMediaServer
         [switch]
         $EmailNotify,
 
-    # Attach log file if LogFile configured to notification 
+    # Attach log file to notification if LogFile configured 
     [Parameter(
         ParameterSetName="EmailNotify",
         HelpMessage="Attach logfile with email notification")]
@@ -239,7 +239,17 @@ Function Update-PlexMediaServer
         ParameterSetName="LogFile")]
 
         [switch]
-        $EmailLog,
+        $AttachLog,
+
+    # Include log file contents in notification if LogFile configured 
+    [Parameter(
+        ParameterSetName="EmailNotify",
+        HelpMessage="Attach logfile with email notification")]
+    [Parameter(
+        ParameterSetName="LogFile")]
+
+        [switch]
+        $IncludeLog,
 
     #
     [Parameter(
@@ -458,18 +468,17 @@ Function Update-PlexMediaServer
             foreach($Key in $PMSInstallKeys){
                 if(Test-Path $Key -ErrorAction SilentlyContinue){
                     if(Get-ItemProperty "$(Get-ItemProperty $Key -Name "InstallFolder" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty InstallFolder -OutVariable InstallFolder)\Plex Media Server.exe" -OutVariable PMSExeFile -ErrorAction SilentlyContinue){
-                    if($LogFile){Write-Log -Message "Plex Media Server found $PMSExeFile" -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Plex Media Server installation found in $Key" -Path $LogFile -Level Info}
                         Break
                     }else{
-                        if($LogFile){Write-Log -Message "Plex Media Server not found in $Key" -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Plex Media Server installation not found in $Key" -Path $LogFile -Level Info}
                     }
                 }
             }
 
             #Locate Plex Media Server.exe and Get Current Version and determin username
             if(Get-Process "Plex Media Server" -IncludeUserName -OutVariable PMSProcess -ErrorAction SilentlyContinue | Select-Object Path | Get-ItemProperty -OutVariable PMSExeFile -ErrorAction SilentlyContinue ){
-                if($LogFile){Write-Log -Message "Plex Media Server process running $($PMSProcess.Path) as User $($PMSProcess.UserName)" -Path $LogFile -Level Info}
-                if($LogFile){Write-Log -Message "Plex Media Server found $PMSExeFile" -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Plex Media Server process running $($PMSProcess.Path) in user context $($PMSProcess.UserName)" -Path $LogFile -Level Info}
                 If (-not $UserName){$UserName=$PMSProcess.UserName}
             }else{ # if process isn't running
                 if($LogFile){Write-Log -Message "Plex Media Server process not running" -Path $LogFile -Level Info}
@@ -532,8 +541,8 @@ Function Update-PlexMediaServer
 
             if(-not $quiet){Write-Host "Checking Plex Media Server Status..." -ForegroundColor Cyan -NoNewline}
             if($PMSExeFile){
-                if($LogFile){Write-Log -Message "Plex Media Server found $PMSExeFile version $installedVersion as user $UserName" -Path $LogFile -Level Info}
                 $installedVersion,$installedBuild = $PMSExeFile.VersionInfo.ProductVersion.Split('-')
+                if($LogFile){Write-Log -Message "Plex Media Server executable $PMSExeFile is version $installedVersion configured to run as user $UserName" -Path $LogFile -Level Info}
             }
             if($PmsProcess){
                 if(-not $quiet){Write-Host "Running" -ForegroundColor Cyan}
@@ -824,11 +833,12 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "`t Startup/Run Keys: Removed" -ForegroundColor Cyan}
             }
 
-            if($UpdateCleanup){
+            # Update Cleanup
+	    if($UpdateCleanup){
                 if(Get-ChildItem "$LocalAppDataPath\Plex Media Server\Updates" -Filter '*.exe' -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending -OutVariable PmsUpdates){
                     if($LogFile){Write-Log -Message "Checking Updates folder for Cleanup." -Path $LogFile -Level Info}
                     if($PmsUpdates.Count -gt $UpdateCleanup){
-                        if($LogFile){Write-Log -Message "Cleanup threshold reached, executing cleanup of $($PmsUpdates.Count-$UpdateCleanup) updates" -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Cleanup threshold reached, executing cleanup of $($PmsUpdates.Count-$UpdateCleanup) update/s." -Path $LogFile -Level Info}
                         foreach($PmsUpdate in $PmsUpdates){
                             if($PmsUpdates.IndexOf($PmsUpdate) -lt $UpdateCleanup){continue}
                             try{
@@ -920,14 +930,23 @@ Function Update-PlexMediaServer
             }
 
             if($EmailNotify){
-                $msg = "Plex Media Server $($PlexServer[0].MediaContainer.friendlyName) was updated on computer $env:COMPUTERNAME.`r`n`r`nNew Version: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.ProductVersion)`r`nOld Version: $installedVersion-$installedBuild"
                 if($LogFile){Write-Log -Message "Preparing Notification Email: $msg" -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Sending Email Notification..." -ForegroundColor Cyan -NoNewline}
-                if($EmailLog){
+                $msg = "Plex Media Server $($PlexServer[0].MediaContainer.friendlyName) was updated on computer $env:COMPUTERNAME.`r`n`r`nNew Version: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.ProductVersion)`r`nOld Version: $installedVersion-$installedBuild"
+                if($IncludeLog -and $LogFile){
+                    $logContent = Get-Content -Path $LogFile
+                    $msg += "`t`n****  START LOG  ****`t`n"
+                    Foreach ($Line in $logContent) {
+                        $msg += $Line + "`t`n"
+                    }
+                    $msg += "****  END LOG  ****"
+                }
+
+                if($AttachLog -and $LogFile){
                     if($LogFile){Write-Log -Message "Sending Email Notification to $SmtpTo with log attached." -Path $LogFile -Level Info}
                     if(Send-ToEmail -SmtpFrom $SmtpFrom -SmtpTo $SmtpTo -Subject "Plex Media Server Updated on $env:COMPUTERNAME" `
                         -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
-                        -EnableSSL $EnableSSL -attachmentpath $LogFile -IsBodyHtml $true -PassThru -ErrorAction SilentlyContinue){
+                        -EnableSSL $EnableSSL -attachmentpath $LogFile -PassThru -ErrorAction SilentlyContinue){
                         if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
@@ -938,7 +957,7 @@ Function Update-PlexMediaServer
                     if($LogFile){Write-Log -Message "Sending Email Notification to $SmtpTo." -Path $LogFile -Level Info}
                     if(Send-ToEmail -SmtpFrom $SmtpFrom -SmtpTo $SmtpTo -Subject "Plex Media Server updated on $env:COMPUTERNAME" `
                         -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
-                        -EnableSSL $EnableSSL -IsBodyHtml $true -PassThru -ErrorAction SilentlyContinue){
+                        -EnableSSL $EnableSSL -PassThru -ErrorAction SilentlyContinue){
                             if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                             if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
@@ -1129,33 +1148,36 @@ function Get-RestMethod{
     }
 }
 
-
 function Send-ToEmail([string]$SmtpFrom, [string]$SmtpTo, [string]$Subject, [string]$Body, [string]$attachmentpath, [string]$SmtpUser, [string]$SmtpPassword, [string]$SmtpServer, [string]$SmtpPort, [bool]$EnableSSL, [bool]$IsBodyHtml, [switch]$PassThru){
-
-    $message = new-object Net.Mail.MailMessage;
-    $message.From = "$SmtpFrom";
-    $message.To.Add($SmtpTo);
-    $message.Subject = $Subject;
-    if($IsBodyHtml){$message.IsBodyHtml = $true;}
-    $message.Body = $Body;
-    if($attachmentpath){
-        $attachment = New-Object Net.Mail.Attachment($attachmentpath)
-        $message.Attachments.Add($attachment);
-    }
-
-    $smtp = new-object Net.Mail.SmtpClient("$SmtpServer", "$SmtpPort");
-    if($EnableSSL){$smtp.EnableSSL = $true;}
-    $smtp.Credentials = New-Object System.Net.NetworkCredential($SmtpUser, $SmtpPassword);
-    try{
-        $smtp.send($message);
-    }catch{
-        if($PassThru){return $_.exception}else{return $false}
-    }finally{
-        if($attachmentpath){$attachment.Dispose();}
-    }
-    return $true
- }
-
+    
+        $message = new-object Net.Mail.MailMessage;
+        $message.From = "$SmtpFrom";
+        $message.To.Add($SmtpTo);
+        $message.Subject = $Subject;
+        if($IsBodyHtml){
+            $message.IsBodyHtml = $true;
+            $message.Body = (ConvertTo-Html -Body $body | Out-String);
+        }else{
+            $message.Body = $Body;
+        }
+        if($attachmentpath){
+            $attachment = New-Object Net.Mail.Attachment($attachmentpath)
+            $message.Attachments.Add($attachment);
+        }
+    
+        $smtp = new-object Net.Mail.SmtpClient("$SmtpServer", "$SmtpPort");
+        if($EnableSSL){$smtp.EnableSSL = $true;}
+        $smtp.Credentials = New-Object System.Net.NetworkCredential($SmtpUser, $SmtpPassword);
+        try{
+            $smtp.send($message);
+        }catch{
+            if($PassThru){return $_.exception}else{return $false}
+        }finally{
+            if($attachmentpath){$attachment.Dispose();}
+        }
+        return $true
+     }
+    
  <# 
 .Synopsis 
    Write-Log writes a message to a specified log file with the current time stamp. 
