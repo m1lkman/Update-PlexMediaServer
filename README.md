@@ -131,9 +131,6 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 * A: That is entirely up to you! Create some issues or fork and fix/add whe you need.
 
 ## Version Information
-```v2.0.4 2017.11.10 (Updates by m1lkman)```
-  * Logging updates
-
 ```v2.0.3 2017.11.9 (Updates by m1lkman)```
   * Added IncludeLog parameter for including log text in notification (renamed EmailLog AttachLog)
   * Improved notification logic and general logging content
