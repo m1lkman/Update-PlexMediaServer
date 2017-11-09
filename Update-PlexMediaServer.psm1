@@ -499,7 +499,7 @@ Function Update-PlexMediaServer
             foreach($Key in $PMSSettingsKeys){
                 if(Test-Path $Key -ErrorAction SilentlyContinue){
                     if(Get-ItemProperty $Key -OutVariable PmsSettings -ErrorAction SilentlyContinue){
-                        if($LogFile){Write-Log -Message "Key Found $Key" -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Plex Settings Key Found $Key" -Path $LogFile -Level Info}
                         switch($PmsSettings.ButlerUpdateChannel){
                             0{$ButlerUpdateChannel="Public"}
                             8{$ButlerUpdateChannel="Beta"}
