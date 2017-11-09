@@ -437,14 +437,14 @@ Function Update-PlexMediaServer
                         return
                     }
                 }
-                if($LogFile){Write-Log -Message "Server Online Token Authentication enabled via command-line" -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Server Online Token Authentication execution enabled" -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Verifying Server Online Authentication Token..." -ForegroundColor Cyan -NoNewline}
                 $UseServerToken=$true
             }
 
             #Begin Prcess Arguments
             if($EmailNotify){
-                if($LogFile){Write-Log -Message "Email Notification enabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Email Notification enabled via command-line (-EmailNotify)" -Path $LogFile -Level Info}
             }
             if($DisablePlexPass){
                 if($LogFile){Write-Log -Message "PlexPass(Beta) Updates disabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
@@ -935,9 +935,9 @@ Function Update-PlexMediaServer
                 $msg = "Plex Media Server $($PlexServer[0].MediaContainer.friendlyName) was updated on computer $env:COMPUTERNAME.`r`n`r`nNew Version: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.ProductVersion)`r`nOld Version: $installedVersion-$installedBuild"
                 if($IncludeLog -and $LogFile){
                     $logContent = Get-Content -Path $LogFile
-                    $msg += "`t`n****  START LOG  ****`t`n"
+                    $msg += "`r`n`r`n****  START LOG  ****`r`n"
                     Foreach ($Line in $logContent) {
-                        $msg += $Line + "`t`n"
+                        $msg += $Line + "`r`n"
                     }
                     $msg += "****  END LOG  ****"
                 }
