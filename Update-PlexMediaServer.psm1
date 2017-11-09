@@ -824,11 +824,12 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "`t Startup/Run Keys: Removed" -ForegroundColor Cyan}
             }
 
-            if($UpdateCleanup){
+            # Update Cleanup
+	    if($UpdateCleanup){
                 if(Get-ChildItem "$LocalAppDataPath\Plex Media Server\Updates" -Filter '*.exe' -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending -OutVariable PmsUpdates){
                     if($LogFile){Write-Log -Message "Checking Updates folder for Cleanup." -Path $LogFile -Level Info}
                     if($PmsUpdates.Count -gt $UpdateCleanup){
-                        if($LogFile){Write-Log -Message "Cleanup threshold reached, executing cleanup of $($PmsUpdates.Count-$UpdateCleanup) updates" -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Cleanup threshold reached, executing cleanup of $($PmsUpdates.Count-$UpdateCleanup) update/s." -Path $LogFile -Level Info}
                         foreach($PmsUpdate in $PmsUpdates){
                             if($PmsUpdates.IndexOf($PmsUpdate) -lt $UpdateCleanup){continue}
                             try{
