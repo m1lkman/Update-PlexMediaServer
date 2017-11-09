@@ -321,16 +321,16 @@ Function Update-PlexMediaServer
 
     begin{
         switch($PSCmdlet.ParameterSetName){
-            "ServerAuth"{Write-Verbose "ParameterSetName: $_"}
-            "TokenAuth"{Write-Verbose "ParameterSetName: $_"}
-            "CredAuth"{Write-Verbose "ParameterSetName: $_"}
-            "TextAuth"{Write-Verbose "ParameterSetName: $_"}
-            default{Write-Verbose "ParameterSetName: $_"}
+            "ServerAuth"{Write-Debug "ParameterSetName: $_"}
+            "TokenAuth"{Write-Debug "ParameterSetName: $_"}
+            "CredAuth"{Write-Debug "ParameterSetName: $_"}
+            "TextAuth"{Write-Debug "ParameterSetName: $_"}
+            default{Write-Debug "ParameterSetName: $_"}
             
         }
 
         if($Logfile){if(Test-Path $LogFile){Remove-Item -Path $LogFile -Force -ErrorAction SilentlyContinue | Out-Null}}
-        if($LogFile){Write-Log -Message "Update-PlexMedaiServer Sript Starting" -Path $LogFile -Level Info}
+        if($LogFile){Write-Log -Message "Update-PlexMediaServer Starting" -Path $LogFile -Level Info}
         New-PSDrive HKCU -PSProvider Registry -Root Registry::HKEY_CURRENT_USER | Out-Null
         New-PSDrive HKLM -PSProvider Registry -Root Registry::HKEY_LOCAL_MACHINE | Out-Null
         New-PSDrive HKU -PSProvider Registry -Root Registry::HKEY_USERS | Out-Null
@@ -437,14 +437,17 @@ Function Update-PlexMediaServer
                         return
                     }
                 }
-                if($LogFile){Write-Log -Message "Server Online Token Authentication enabled via command-line" -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Server Online Token Authentication execution enabled" -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Verifying Server Online Authentication Token..." -ForegroundColor Cyan -NoNewline}
                 $UseServerToken=$true
             }
 
             #Begin Prcess Arguments
+            if($Force){
+                if($LogFile){Write-Log -Message "Force Update enabled via command-line (-Force)" -Path $LogFile -Level Info}
+            }
             if($EmailNotify){
-                if($LogFile){Write-Log -Message "Email Notification enabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Email Notification enabled via command-line (-EmailNotify)" -Path $LogFile -Level Info}
             }
             if($DisablePlexPass){
                 if($LogFile){Write-Log -Message "PlexPass(Beta) Updates disabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
@@ -499,7 +502,7 @@ Function Update-PlexMediaServer
             foreach($Key in $PMSSettingsKeys){
                 if(Test-Path $Key -ErrorAction SilentlyContinue){
                     if(Get-ItemProperty $Key -OutVariable PmsSettings -ErrorAction SilentlyContinue){
-                        if($LogFile){Write-Log -Message "Key Found $Key" -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Plex Settings Key Found $Key" -Path $LogFile -Level Info}
                         switch($PmsSettings.ButlerUpdateChannel){
                             0{$ButlerUpdateChannel="Public"}
                             8{$ButlerUpdateChannel="Beta"}
@@ -624,7 +627,7 @@ Function Update-PlexMediaServer
             if(-not $quiet){Write-Host "Checking Plex Media Server Service Wrapper (PlexService) Status..." -ForegroundColor Cyan -NoNewline}
             if(Get-ItemProperty $((Get-WmiObject win32_service -ErrorAction SilentlyContinue|?{$_.name -eq "PlexService"}).PathName).Replace("`"","") -OutVariable PmsServiceFile -ErrorAction SilentlyContinue){
                 if(Get-Service PlexService -ErrorAction SilentlyContinue -OutVariable PmsService){
-                    if($LogFile){Write-Log -Message "Found Plex Media Server Service Wrapper (PlexService) Installed." -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) found installed (Version: $($PmsServiceFile.VersionInfo.FileVersion))." -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "$($PmsService.Status)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Path: $PmsServiceFile" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Version: $($PmsServiceFile.VersionInfo.FileVersion)" -ForegroundColor Cyan}
@@ -653,7 +656,7 @@ Function Update-PlexMediaServer
                 $releaseVersion,$releaseBuild = $release[0].computer.Windows.version.Split('-')
                 $releaseUrl = $release[0].computer.Windows.releases.url
                 $releaseChecksum = $release[0].computer.Windows.releases.checksum
-                if($LogFile){Write-Log -Message "Found $releaseVersion-$releaseBuild available for download." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Update version $releaseVersion-$releaseBuild available for download." -Path $LogFile -Level Info}
             }
 
             #Determine if installed PMS version needs update
@@ -663,11 +666,12 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Running the latest version $installedVersion." -ForegroundColor Cyan}
                 if($force){
                     $UpdateRequired=$true
+                    $ArgumentList = "/repair" 
+                    if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
                 }else{
                     if(-not $quiet){Write-Host "Latest Version $installedVersion already installed. Use -force to force installation." -ForegroundColor Cyan}
                     return
                 }
-                $ArgumentList = "/repair" 
             }elseif([version]$installedVersion -lt [version]$releaseVersion){
                 $UpdateRequired=$true
                 if($LogFile){Write-Log -Message "New version available. Installed version ($installedVersion) less than available version ($releaseVersion)." -Path $LogFile -Level Info}
@@ -678,11 +682,12 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Running later than Update version" -ForegroundColor Cyan}
                 if($force){
                     $UpdateRequired=$true
+                    $ArgumentList = "/install"
+                    if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
                 }else{
                     if(-not $quiet){Write-Host "Later Version $installedVersion installed. Use -force to force installation." -ForegroundColor Cyan}
                     return
                 }
-                $ArgumentList = "/install" 
             }
             if(-not $quiet){Write-Host "`t PlexPass(Beta): $PlexPassStatus" -ForegroundColor Cyan}
             if(-not $quiet){Write-Host "`t Update Version: $releaseVersion" -ForegroundColor Cyan}
@@ -803,12 +808,12 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Restart Required: False" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Plex Media Server update completed with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 3010 ){
                 if(-not $quiet){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
-                if(-not $quiet){Write-Host "`t Restart Required: True" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Plex Media Server update completed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
+                if(-not $quiet){Write-Host "`t Restart zequired: True" -ForegroundColor Cyan}
+                if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 1602 ){
                 if(-not $quiet){Write-Host "Cancelled" -ForegroundColor red}
                 if(-not $quiet){Write-Host "`t Update was cancelled by user. ExitCode: $($Process.ExitCode)" -ForegroundColor Red}
@@ -895,7 +900,7 @@ Function Update-PlexMediaServer
             if(-not $quiet){Write-Host "Verifying Plex Web Status..." -ForegroundColor Cyan -NoNewline}
             if((Get-RestMethod -Uri $PlexServerUri -PassThru -OutVariable PlexServer -ErrorAction SilentlyContinue).exception){
                 if($PlexServer.exception.Response){
-                    if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri. Message: $($PlexServer.exception.Message) (Error: $($PlexServer.exception.HResult)) StatusDescription: $($PlexServer.exception.Response.StatusDescription) (StatusCode: $($return.exception.Response.StatusCode.value__))" -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Plex Web unavailable at $PlexServerUri. Message: $($PlexServer.exception.Message) (Error: $($PlexServer.exception.HResult)) StatusDescription: $($PlexServer.exception.Response.StatusDescription) (StatusCode: $($return.exception.Response.StatusCode.value__))" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host $PlexServer.exception.message -ForegroundColor Red}
                 }else{
                     if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri" -Path $LogFile -Level Info}
@@ -914,6 +919,7 @@ Function Update-PlexMediaServer
             }else{
                 if(-not $quiet){Write-Host "Available" -ForegroundColor Cyan}
                 if($PlexServer[0].MediaContainer){
+                    if($LogFile){Write-Log -Message "Plex Web avaialble at $PlexServerUri. Friendly Name: $($PlexServer[0].MediaContainer.friendlyName) Username: $($PlexServer[0].MediaContainer.myPlexUserName) Signin State: $($PlexServer[0].MediaContainer.myPlexSigninState)" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "`t Friendly Name: $($PlexServer[0].MediaContainer.friendlyName)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Username: $($PlexServer[0].MediaContainer.myPlexUserName)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Signin State: $($PlexServer[0].MediaContainer.myPlexSigninState)" -ForegroundColor Cyan}
@@ -935,9 +941,9 @@ Function Update-PlexMediaServer
                 $msg = "Plex Media Server $($PlexServer[0].MediaContainer.friendlyName) was updated on computer $env:COMPUTERNAME.`r`n`r`nNew Version: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.ProductVersion)`r`nOld Version: $installedVersion-$installedBuild"
                 if($IncludeLog -and $LogFile){
                     $logContent = Get-Content -Path $LogFile
-                    $msg += "`t`n****  START LOG  ****`t`n"
+                    $msg += "`r`n`r`n****  START LOG  ****`r`n"
                     Foreach ($Line in $logContent) {
-                        $msg += $Line + "`t`n"
+                        $msg += $Line + "`r`n"
                     }
                     $msg += "****  END LOG  ****"
                 }
@@ -977,7 +983,7 @@ Function Update-PlexMediaServer
         }
     }
     end{
-        if($LogFile){Write-Log -Message "Update-PlexMedaiServer Sript Completed" -Path $LogFile -Level Info}
+        if($LogFile){Write-Log -Message "Update-PlexMediaServer Completed" -Path $LogFile -Level Info}
     }
 }
 
