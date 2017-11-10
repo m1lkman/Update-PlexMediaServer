@@ -316,7 +316,14 @@ Function Update-PlexMediaServer
         HelpMessage="Enables SSL for SMTP Authentication")]
 
         [switch]
-        $EnableSSL
+        $EnableSSL,
+    # Enable HTML Email Formating 
+    [Parameter(
+        ParameterSetName="EmailNotify",
+        HelpMessage="Enables SSL for SMTP Authentication")]
+
+        [switch]
+        $EmailIsBodyHtml
     )
 
     begin{
@@ -945,12 +952,13 @@ Function Update-PlexMediaServer
                     }
                     $msg += "****  END LOG  ****"
                 }
+                if($EmailIsBodyHtml){$msg = $msg.Replace("`r`n","</br>")}
 
                 if($AttachLog -and $LogFile){
                     if($LogFile){Write-Log -Message "Sending Email Notification to $SmtpTo with log attached." -Path $LogFile -Level Info}
                     if(Send-ToEmail -SmtpFrom $SmtpFrom -SmtpTo $SmtpTo -Subject "Plex Media Server Updated on $env:COMPUTERNAME" `
                         -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
-                        -EnableSSL $EnableSSL -attachmentpath $LogFile -PassThru -ErrorAction SilentlyContinue){
+                        -EnableSSL $EnableSSL -attachmentpath $LogFile -IsBodyHtml $EmailIsBodyHtml -PassThru -ErrorAction SilentlyContinue){
                         if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
@@ -961,7 +969,7 @@ Function Update-PlexMediaServer
                     if($LogFile){Write-Log -Message "Sending Email Notification to $SmtpTo." -Path $LogFile -Level Info}
                     if(Send-ToEmail -SmtpFrom $SmtpFrom -SmtpTo $SmtpTo -Subject "Plex Media Server updated on $env:COMPUTERNAME" `
                         -Body $msg -SmtpUser $SmtpUser -SmtpPassword $SmtpPassword -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
-                        -EnableSSL $EnableSSL -PassThru -ErrorAction SilentlyContinue){
+                        -EnableSSL $EnableSSL -IsBodyHtml $EmailIsBodyHtml -PassThru -ErrorAction SilentlyContinue){
                             if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                             if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
