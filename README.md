@@ -35,13 +35,17 @@ Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <
 
 Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-EmailIsBodyHtml] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-EmailIsBodyHtml] [-WhatIf] [-Confirm]   [<CommonParameters>]
+
+Update-PlexMediaServer [-SlackNotify] -SlackChannel <string> -SlackToken <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
 Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
 
-Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
+Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]
+[<CommonParameters>]
 
-Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
+Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]
+[<CommonParameters>]
 
 Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -85,6 +89,10 @@ Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@
 or enable email notifications with custom SMTP port and SSL authentication:
 ```
 Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL
+```
+#Slack channel notification:
+```
+Update-PlexMediaPlayer -SlackNotify -SlackChannel '#ChannelName' -SlackToken <Slack OAuth Token>
 ```
 ### Scheduled Task Example (putting it all together)
 Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use the default execution menthod leveraging my server's Online Authentication Token to install the latest beta channel (PlexPass) updates. I also enabled email notification with log included and update cleanup to remove all previous updates except the latest 2.
@@ -131,10 +139,11 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 * A: That is entirely up to you! Create some issues or fork and fix/add whe you need.
 
 ## Version Information
-```v2.0.3 2017.11.9 (Updates by m1lkman)```
+```v2.0.3 2017.11.10 (Updates by m1lkman)```
   * Added IncludeLog parameter for including log text in notification (renamed EmailLog to AttachLog)
   * Added EmailIsBodyHtml parameter to switch email to for mobile friendly HTML format 
   * Improved notification logic and general logging content
+  * Added Slack Notifications with -SlackNotify parameter (Slack OAuth token required)
   
 ```v2.0.2 2017.11.8 (Updates by m1lkman)```
   * Corrected logging error causing large log file
@@ -201,3 +210,4 @@ This script is free to use or edit, and should be used at your own risk!
 * The Plex Team
 * cjmurph for creating [Plex Media Server Service Wrapper (PMS as a Service)](https://github.com/cjmurph/PmsService)
 * mrworf for inspiring most of v2.0 updates with his excellent bash based update script for Linux [plexupdate](https://github.com/mrworf/plexupdate)
+* WahlNetwork for [Post-ToSlack Module](https://github.com/WahlNetwork/powershell-scripts/blob/master/Slack/Post-ToSlack.ps1)
