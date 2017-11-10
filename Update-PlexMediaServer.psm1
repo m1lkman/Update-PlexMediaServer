@@ -456,6 +456,15 @@ Function Update-PlexMediaServer
             if($EmailNotify){
                 if($LogFile){Write-Log -Message "Email Notification enabled via command-line (-EmailNotify)" -Path $LogFile -Level Info}
             }
+            if($AttachLog){
+                if($LogFile){Write-Log -Message "Attach Log to Notification enabled via command-line (-AttachLog)" -Path $LogFile -Level Info}
+            }
+            if($IncludeLog){
+                if($LogFile){Write-Log -Message "Include Log in Notification enabled via command-line (-IncludeLog)" -Path $LogFile -Level Info}
+            }
+            if($EmailIsBodyHtml){
+                if($LogFile){Write-Log -Message "Email HTML Format for Notification enabled via command-line (-EmailIsBodyHtml)" -Path $LogFile -Level Info}
+            }
             if($DisablePlexPass){
                 if($LogFile){Write-Log -Message "PlexPass(Beta) Updates disabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
             }
