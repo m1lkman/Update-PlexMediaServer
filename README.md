@@ -1,5 +1,5 @@
 # Plex Media Server Updater PowerShell Module
-Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or Beta(PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
+Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or beta channel (PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
 ### Prerequisites
   One of the following Operating Systems with supported PowerShell version.
   * Windows 7/Windows Server 2008 with PowerShell 4.0 or later
@@ -70,11 +70,11 @@ Execute passively using Plex Server Online Authentication Token (requires Plex S
 ```
 Update-PlexMediaServer -UseServerToken -Passive
 ```
-or silently check for PlexPass updates using Plex.tv login and password:
+or silently check for beta channel (PlexPass) updates using Plex.tv login and password:
 ```
 Update-PlexMediaServer -PlexLogin <Email/ID> -PlexPassword <Password> -Quiet
 ```
-to disable PlexPass(Beta) updates and cleanup all Updates from the Updates folder except the latest 2:
+to disable beta channel (PlexPass) updates and cleanup all Updates from the Updates folder except the latest 2:
 ```
 Update-PlexMediaServer -DisablePlexPass -UpdateCleanup 2
 ```
@@ -87,7 +87,7 @@ or enable email notifications with custom SMTP port and SSL authentication:
 Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL
 ```
 ### Scheduled Task Example (putting it all together)
-Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use the default execution menthod leveraging my server's Online Authentication Token to install the latest PlexPass updates. I also enabled email notification with log included and update cleanup to remove all previous updates except the latest 2.
+Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use the default execution menthod leveraging my server's Online Authentication Token to install the latest beta channel (PlexPass) updates. I also enabled email notification with log included and update cleanup to remove all previous updates except the latest 2.
 
 In Task Scheduler click on Create Task. Be sure to enable "Run whether user is logged on or not" and check "Run with highest privileges".
 
@@ -132,7 +132,7 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 
 ## Version Information
 ```v2.0.3 2017.11.9 (Updates by m1lkman)```
-  * Added IncludeLog parameter for including log text in notification (renamed EmailLog AttachLog)
+  * Added IncludeLog parameter for including log text in notification (renamed EmailLog to AttachLog)
   * Added EmailIsBodyHtml parameter to switch email to for mobile friendly HTML format 
   * Improved notification logic and general logging content
   
