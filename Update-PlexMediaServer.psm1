@@ -43,6 +43,9 @@ Function Update-PlexMediaServer
         Mandatory=$false,
         HelpMessage="Enables Plex Server Authentication Token Discovery")]
     [Parameter(
+        ParameterSetName="SlackNotify",
+        Position=0)]
+    [Parameter(
         ParameterSetName="EmailNotify",
         Position=0)]
     [Parameter(
@@ -71,6 +74,9 @@ Function Update-PlexMediaServer
         })]
     [ValidateNotNull()]
     [Parameter(
+        ParameterSetName="SlackNotify",
+        Position=0)]
+    [Parameter(
         ParameterSetName="EmailNotify",
         Position=0)]
 
@@ -88,6 +94,9 @@ Function Update-PlexMediaServer
     [System.Management.Automation.PSCredential]
     [System.Management.Automation.Credential()]    
     [Parameter(
+        ParameterSetName="SlackNotify",
+        Position=0)]
+    [Parameter(
         ParameterSetName="EmailNotify",
         Position=0)]
 
@@ -103,6 +112,9 @@ Function Update-PlexMediaServer
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="Enter Plex.tv Email or ID")]
     [Parameter(
+        ParameterSetName="SlackNotify",
+        Position=0)]
+    [Parameter(
         ParameterSetName="EmailNotify",
         Position=0)]
                         
@@ -115,6 +127,9 @@ Function Update-PlexMediaServer
         Position=1,
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="Enter Plex.tv Password")]
+    [Parameter(
+        ParameterSetName="SlackNotify",
+        Position=0)]
     [Parameter(
         ParameterSetName="EmailNotify",
         Position=1)]
@@ -162,8 +177,10 @@ Function Update-PlexMediaServer
     [Parameter(
         ParameterSetName="TextAuth")]
     [Parameter(
+        ParameterSetName="SlackNotify")]
+    [Parameter(
         ParameterSetName="EmailNotify")]
-
+    
         [string]
         $LogFile="$PSScriptRoot\Update-PlexMediaServer.log",
 
@@ -196,6 +213,8 @@ Function Update-PlexMediaServer
     [Parameter(
         ParameterSetName="LogFile")]
     [Parameter(
+        ParameterSetName="SlackNotify")]
+    [Parameter(
         ParameterSetName="EmailNotify")]
                 
         [switch]
@@ -216,10 +235,41 @@ Function Update-PlexMediaServer
     [Parameter(
         ParameterSetName="LogFile")]
     [Parameter(
+        ParameterSetName="SlackNotify")]
+    [Parameter(
         ParameterSetName="EmailNotify")]
             
         [switch]
         $Quiet,
+
+    # For Email Notification configure all the below parameters in script or via command line 
+    [Parameter(
+        ParameterSetName="SlackNotify",
+        Position=0,
+        Mandatory=$true,
+        HelpMessage="Enables email notification")]
+                                
+        [switch]
+        $SlackNotify,
+
+    #
+    [Parameter(
+        ParameterSetName="SlackNotify",
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Slack Channel Name")]
+
+        [string]
+        $SlackChannel,
+    #
+    [Parameter(
+        ParameterSetName="SlackNotify",
+        Mandatory=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Slack OAuth Token")]
+
+        [string]
+        $SlackToken,
 
     # For Email Notification configure all the below parameters in script or via command line 
     [Parameter(
@@ -769,11 +819,11 @@ Function Update-PlexMediaServer
                     if($PmsService | Stop-Service -Force -ErrorAction SilentlyContinue){
                         if($LogFile){Write-Log -Message "Sent Plex Media Server Service Wrapper (PlexService) Stop-Service." -Path $LogFile -Level Info}
                     }else{
-                        if($LogFile){Write-Log -Message "Service Hung, Sending Plex Media Server Service Wrapper (PlexService) Stop-Process." -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Service not responding to Stop-Service, Sending Plex Media Server Service Wrapper (PlexService) Stop-Process -Force." -Path $LogFile -Level Info}
                         if(Stop-Process -Name PlexService -ErrorAction SilentlyContinue -Force){
-                            if($LogFile){Write-Log -Message "Service Hung, Sending Plex Media Server Service Wrapper (PlexService) Stop-Process." -Path $LogFile -Level Info}
+                            if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Stop-Process -Force Successful." -Path $LogFile -Level Info}
                         }else{
-                            if($LogFile){Write-Log -Message "Service Hung, Sending Plex Media Server Service Wrapper (PlexService) Stop-Process." -Path $LogFile -Level Info}
+                            if($LogFile){Write-Log -Message "Service hung. Retrying Plex Media Server Service Wrapper (PlexService) Stop-Process -Force." -Path $LogFile -Level Info}
                         }
                     }
                 }
@@ -785,11 +835,11 @@ Function Update-PlexMediaServer
 
             #Stop all Plex Media Server related processes
             if(Get-Process -Name 'Plex Media Server','Plex Media Scanner','Plex Tuner Service','PlexDlnaServer','PlexNewTranscoder','PlexScriptHost','PlexTranscoder' -ErrorAction SilentlyContinue){
-                if($LogFile){Write-Log -Message "Found Plex Media Server processes running." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Plex Media Server processes found running." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Stopping Plex Media Server Processes..." -ForegroundColor Cyan -NoNewline}
                 while(Get-Process -Name 'Plex Media Server','Plex Media Scanner','PlexDlnaServer','PlexNewTranscoder','PlexScriptHost','PlexTranscoder' -ErrorAction SilentlyContinue -OutVariable PMSProcesses){
+                    if($LogFile){Write-Log -Message "Sent Plex Media Server processes Stop-Process. ($($PmsProcesses.ProcessName))" -Path $LogFile -Level Info}
                     $PMSProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
-                    if($LogFile){Write-Log -Message "Sent Plex Media Server processes Stop-Process." -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "." -ForegroundColor Cyan -NoNewline}
                 }
                 if($LogFile){Write-Log -Message "Plex Media Server processes stopped." -Path $LogFile -Level Info}
@@ -946,6 +996,17 @@ Function Update-PlexMediaServer
                     }
                 }else{
                     if($LogFile){Write-Log -Message "Data missing from server response $PlexServer" -Path $LogFile -Level Info}
+                }
+            }
+
+            if($SlackNotify){
+                if(-not $quiet){Write-Host "Sending Slack Notification to $SlackChannel..." -ForegroundColor Cyan -NoNewline}
+                if(Post-ToSlack -Channel $SlackChannel -token $SlackToken -BotName "Update-PlexMediaServer Module" -Message "Plex Media Server $($PlexServer[0].MediaContainer.friendlyName) was updated on computer $env:COMPUTERNAME.`r`n`r`nNew Version: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.ProductVersion)`r`nOld Version: $installedVersion-$installedBuild" -ErrorAction SilentlyContinue -OutVariable slackResponse){
+                    if($LogFile){Write-Log -Message "Slack Notification sent successsfully." -Path $LogFile -Level Info}
+                    if(-not $quiet){Write-Host "Sent" -ForegroundColor Cyan}
+                }else{
+                    if($LogFile){Write-Log -Message "Error sending Slack Notification. Error $($slackResponse.error)" -Path $LogFile -Level Info}
+                    if(-not $quiet){Write-Host "Error Sending" -ForegroundColor Red}
                 }
             }
 
@@ -1314,3 +1375,76 @@ function Write-Log
     { 
     } 
 }
+
+function Post-ToSlack 
+{
+    <#  
+            .SYNOPSIS
+            Sends a chat message to a Slack organization
+            .DESCRIPTION
+            The Post-ToSlack cmdlet is used to send a chat message to a Slack channel, group, or person.
+            Slack requires a token to authenticate to an org. Either place a file named token.txt in the same directory as this cmdlet,
+            or provide the token using the -token parameter. For more details on Slack tokens, use Get-Help with the -Full arg.
+            .NOTES
+            Written by Chris Wahl for community usage
+            Twitter: @ChrisWahl
+            GitHub: chriswahl
+            .EXAMPLE
+            Post-ToSlack -channel '#general' -message 'Hello everyone!' -botname 'The Borg'
+            This will send a message to the #General channel, and the bot's name will be The Borg.
+            .EXAMPLE
+            Post-ToSlack -channel '#general' -message 'Hello everyone!' -token '1234567890'
+            This will send a message to the #General channel using a specific token 1234567890, and the bot's name will be default (PowerShell Bot).
+            .LINK
+            Validate or update your Slack tokens:
+            https://api.slack.com/tokens
+            Create a Slack token:
+            https://api.slack.com/web
+            More information on Bot Users:
+            https://api.slack.com/bot-users
+    #>
+
+    Param(
+        [Parameter(Mandatory = $true,Position = 0,HelpMessage = 'Slack channel')]
+        [ValidateNotNullorEmpty()]
+        [String]$Channel,
+        [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Chat message')]
+        [ValidateNotNullorEmpty()]
+        [String]$Message,
+        [Parameter(Mandatory = $false,Position = 2,HelpMessage = 'Slack API token')]
+        [ValidateNotNullorEmpty()]
+        [String]$token,
+        [Parameter(Mandatory = $false,Position = 3,HelpMessage = 'Optional name for the bot')]
+        [String]$BotName = 'PowerShell'
+    )
+
+    Process {
+
+        # Static parameters
+        if (!$token) 
+        {
+            $token = Get-Content -Path "$PSScriptRoot\token.txt"
+        }
+        $uri = 'https://slack.com/api/chat.postMessage'
+
+        # Build the body as per https://api.slack.com/methods/chat.postMessage
+        $body = @{
+            token    = $token
+            channel  = $Channel
+            text     = $Message
+            username = $BotName
+            parse    = 'full'
+        }
+
+        # Call the API
+        try 
+        {
+            Invoke-RestMethod -Uri $uri -Body $body
+        }
+        catch 
+        {
+            throw 'Unable to call the API'
+        }
+
+    } # End of process
+} # End of function
