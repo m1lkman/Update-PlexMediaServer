@@ -140,10 +140,10 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 
 ## Version Information
 ```v2.0.3 2017.11.10 (Updates by m1lkman)```
-  * Added IncludeLog parameter for including log text in notification (renamed EmailLog to AttachLog)
-  * Added EmailIsBodyHtml parameter to switch email to for mobile friendly HTML format 
+  * Added -IncludeLog parameter for including log text in notification email (renamed EmailLog to AttachLog)
+  * Added -EmailIsBodyHtml parameter to switch email to mobile friendly HTML format 
   * Improved notification logic and general logging content
-  * Added Slack Notifications with -SlackNotify parameter (Slack OAuth token required)
+  * Added support for #Slack notifications with -SlackNotify parameter (Slack OAuth token required)
   
 ```v2.0.2 2017.11.8 (Updates by m1lkman)```
   * Corrected logging error causing large log file
