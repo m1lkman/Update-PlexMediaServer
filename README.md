@@ -207,7 +207,7 @@ This script is free to use or edit, and should be used at your own risk!
 ## Acknowledgments
 
 * [evanscnforti](https://forums.plex.tv/profile/discussions/evansconforti) from Plex Forums for initial code
-* The Plex Team
 * cjmurph for creating [Plex Media Server Service Wrapper (PMS as a Service)](https://github.com/cjmurph/PmsService)
 * mrworf for inspiring most of v2.0 updates with his excellent bash based update script for Linux [plexupdate](https://github.com/mrworf/plexupdate)
 * WahlNetwork for [Post-ToSlack Module](https://github.com/WahlNetwork/powershell-scripts/blob/master/Slack/Post-ToSlack.ps1)
+* [The Plex Team](https://plex.tv/)
