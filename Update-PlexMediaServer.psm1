@@ -811,7 +811,7 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host $LiveTvSessions.exception.message -ForegroundColor Red}
                 if($LogFile){Write-Log -Message "Exception determining Live TV/DVR sessions. $LiveTvSessions.exception.message" -Path $LogFile -Level Warn}
             }else{
-                if($LiveTvSessions[0].MediaContainer.Video.index -eq 0){
+                if([int]$LiveTvSessions[0].MediaContainer.Video.index -eq 0){
                     if($LogFile){Write-Log -Message "No active Live TV/DVR Sessions found" -Path $LogFile -Level Info}
                 }else{
                     if($LogFile){Write-Log -Message "Active Live TV/DVR Sessions found: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -Path $LogFile -Level Info}
