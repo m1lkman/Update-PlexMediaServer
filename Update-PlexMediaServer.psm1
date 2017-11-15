@@ -643,9 +643,11 @@ Function Update-PlexMediaServer
             if($Plextoken){
                 $PlexServerUri="http://$($hostname):$PlexServerPort/?X-Plex-Token=$($PlexToken)"                    
                 $PlexServerSessionUri="http://$($hostname):$PlexServerPort/status/sessions/?X-Plex-Token=$($PlexToken)"                    
+                $PlexServerLiveTvSessionUri="http://$($hostname):$PlexServerPort/livetv/sessions/?X-Plex-Token=$($PlexToken)"                    
             }else{
-                $PlexServerUri="http://$($hostname):$PlexServerPort/"
-                $PlexServerSessionUri="http://$($hostname):$PlexServerPort/status/sessions"                    
+                $PlexServerUri="http://localhost:$PlexServerPort/"
+                $PlexServerSessionUri="http://localhost:$PlexServerPort/status/sessions"                    
+                $PlexServerLiveTvSessionUri="http://localhost:$PlexServerPort/livetv/sessions"                    
             }
 
             #check Plex Server Availability
@@ -792,23 +794,40 @@ Function Update-PlexMediaServer
                 }
             }
 
-            #Check if Server in use
+            ### Check if Server in use ###
             if(-not $quiet){Write-Host "Checking Active Plex Sessions..." -ForegroundColor Cyan -NoNewline}
             #if((Get-Process -Name 'PlexTranscoder','PlexNewTranscoder' -ErrorAction SilentlyContinue){
             if((Get-RestMethod -Uri $PlexServerSessionUri -ErrorAction SilentlyContinue -PassThru -OutVariable PmsSessions).exception){
-                if(-not $quiet){Write-Host $PlexServerSessions.exception.message -ForegroundColor Red}
+                if(-not $quiet){Write-Host $PmsSessions.exception.message -ForegroundColor Red}
+                if($LogFile){Write-Log -Message "Exception determining active sessions. $LiveTvSessions.exception.message" -Path $LogFile -Level Warn}
             }else{
                 if($PmsSessions[0].MediaContainer.size -eq 0){
-                    if($LogFile){Write-Log -Message "Server not currently in use. No active sessions found." -Path $LogFile -Level Info}
-                    if(-not $quiet){Write-Host "No Sessions" -ForegroundColor Cyan}
-                    if(-not $quiet){Write-Host "`t Current Sessons: $([int]$PmsSessions[0].MediaContainer.size)" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "No active sessions found." -Path $LogFile -Level Info}
                 }else{
-                    if($LogFile){Write-Log -Message "Server $($PlexServer[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -Path $LogFile -Level Info}
-                    if(-not $quiet){Write-Host "In Use" -ForegroundColor Red}
-                    if(-not $quiet){Write-Host "`t Current Sessions: $([int]$PmsSessions[0].MediaContainer.size)" -ForegroundColor Cyan}
-                    if(-not $quiet){Write-Host "Server $($PlexServer[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -ForegroundColor Cyan}
-                    return
+                    if($LogFile){Write-Log -Message "Active Sessions found: $([int]$PmsSessions[0].MediaContainer.size)" -Path $LogFile -Level Info}
                 }
+            }
+            if((Get-RestMethod -Uri $PlexServerLiveTvSessionUri -ErrorAction SilentlyContinue -PassThru -OutVariable LiveTvSessions).exception){
+                if(-not $quiet){Write-Host $LiveTvSessions.exception.message -ForegroundColor Red}
+                if($LogFile){Write-Log -Message "Exception determining Live TV/DVR sessions. $LiveTvSessions.exception.message" -Path $LogFile -Level Warn}
+            }else{
+                if($LiveTvSessions[0].MediaContainer.Video.index -eq 0){
+                    if($LogFile){Write-Log -Message "No active Live TV/DVR Sessions found" -Path $LogFile -Level Info}
+                }else{
+                    if($LogFile){Write-Log -Message "Active Live TV/DVR Sessions found: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -Path $LogFile -Level Info}
+                }
+            }
+            if(([int]$PmsSessions[0].MediaContainer.size -eq 0) -and ([int]$LiveTvSessions[0].MediaContainer.Video.index -eq 0)){
+                if(-not $quiet){Write-Host "No Sessions" -ForegroundColor Cyan}
+                if(-not $quiet){Write-Host "`t Current Sessons: $([int]$PmsSessions[0].MediaContainer.size)" -ForegroundColor Cyan}
+                if(-not $quiet){Write-Host "`t Current Live TV/DVR Sessons: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -ForegroundColor Cyan}
+            }else{
+                if($LogFile){Write-Log -Message "Server $($PlexServer[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -Path $LogFile -Level Info}
+                if(-not $quiet){Write-Host "In Use" -ForegroundColor Red}
+                if(-not $quiet){Write-Host "`t Current Sessions: $([int]$PmsSessions[0].MediaContainer.size)" -ForegroundColor Cyan}
+                if(-not $quiet){Write-Host "`t Current Live TV/DVR Sessions: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -ForegroundColor Cyan}
+                if(-not $quiet){Write-Host "Server $($PlexServer[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -ForegroundColor Cyan}
+                return
             }
 
             #Stop Plex Media Server Service (PlexService)
