@@ -139,6 +139,9 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 * A: That is entirely up to you! Create some issues or fork and fix/add whe you need.
 
 ## Version Information
+```v2.0.4 2017.11.15 (Updates by m1lkman)```
+  * Added new logic to detect Live TV and DVR sessions to "in-use" check
+  
 ```v2.0.3 2017.11.10 (Updates by m1lkman)```
   * Added -IncludeLog parameter for including log text in notification email (renamed EmailLog to AttachLog)
   * Added -EmailIsBodyHtml parameter to switch email to mobile friendly HTML format 
