@@ -830,26 +830,32 @@ Function Update-PlexMediaServer
                 return
             }
 
-            #Stop Plex Media Server Service (PlexService)
-            if($PmsService.status -ne 'Stopped'){
-                if($LogFile){Write-Log -Message "Found Plex Media Server Service Wrapper (PlexService) Running." -Path $LogFile -Level Info}
-                if(-not $quiet){Write-Host "Stopping Plex Media Server Service (PlexService)..." -ForegroundColor Cyan -NoNewline}
-                While ($PmsService.Status -eq "Running"){
-                    if($PmsService | Stop-Service -Force -ErrorAction SilentlyContinue){
+            #Stop Plex Media Server Service Wrapper (PlexService)
+            if($PmsService){
+                if($PmsService.status -ne 'Stopped'){
+                    if($LogFile){Write-Log -Message "Found Plex Media Server Service Wrapper (PlexService) Running." -Path $LogFile -Level Info}
+                    if(-not $quiet){Write-Host "Stopping Plex Media Server Service (PlexService)..." -ForegroundColor Cyan -NoNewline}
+
+                    if($PmsService | Stop-Service -ErrorAction SilentlyContinue -PassThru){
                         if($LogFile){Write-Log -Message "Sent Plex Media Server Service Wrapper (PlexService) Stop-Service." -Path $LogFile -Level Info}
                     }else{
+                        if($LogFile){Write-Log -Message "Error sending Plex Media Server Service Wrapper (PlexService) Stop-Process." -Path $LogFile -Level Error}
+                    }
+                    Start-Sleep -Seconds 1
+                    While ($PmsService.Status -eq "Running"){
                         if($LogFile){Write-Log -Message "Service not responding to Stop-Service, Sending Plex Media Server Service Wrapper (PlexService) Stop-Process -Force." -Path $LogFile -Level Info}
-                        if(Stop-Process -Name PlexService -ErrorAction SilentlyContinue -Force){
+                        if(Stop-Process -Name PlexService -ErrorAction SilentlyContinue -Force -PassThru){
                             if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Stop-Process -Force Successful." -Path $LogFile -Level Info}
                         }else{
                             if($LogFile){Write-Log -Message "Service hung. Retrying Plex Media Server Service Wrapper (PlexService) Stop-Process -Force." -Path $LogFile -Level Info}
                         }
+                        Start-Sleep -Seconds 1
                     }
+                    if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Stopped." -Path $LogFile -Level Info}
+                    if(-not $quiet){Write-Host "Stopped" -ForegroundColor Cyan}
+                }else{
+                    if($LogFile){Write-Log -Message "Plex Media Server Service (PlexService) is Stopped." -Path $LogFile -Level Info}
                 }
-                if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Stopped." -Path $LogFile -Level Info}
-                if(-not $quiet){Write-Host "Stopped" -ForegroundColor Cyan}
-            }else{
-                if($LogFile){Write-Log -Message "Plex Media Server Service (PlexService) already Stopped." -Path $LogFile -Level Info}
             }
 
             #Stop all Plex Media Server related processes
