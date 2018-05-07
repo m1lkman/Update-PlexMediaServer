@@ -141,6 +141,7 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 ## Version Information
 ```v2.0.4 2017.11.15 (Updates by m1lkman)```
   * Added new logic to detect Live TV and DVR sessions to "in-use" check
+  * Improved logic for stopping PlexService Service 
   
 ```v2.0.3 2017.11.10 (Updates by m1lkman)```
   * Added -IncludeLog parameter for including log text in notification email (renamed EmailLog to AttachLog)
