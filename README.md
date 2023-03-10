@@ -83,9 +83,9 @@ to disable beta channel (PlexPass) updates and cleanup all Updates from the Upda
 ```
 Update-PlexMediaServer -DisablePlexPass -UpdateCleanup 2
 ```
-force checking windows-x86 build on 64-bit system
+force checking for build windows-x86_64 even if windows-x86 build is installed, i.g. upgrade to 64-bit
 ```
-Update-PlexMediaServer -Build 'windows-x86'
+Update-PlexMediaServer -Build 'windows-x86_64'
 ```
 check plex running on localhost and bypass public IP reverse DNS lookup
 ```
@@ -155,8 +155,8 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 
 ## Version Information
 ```v2.0.5 2023.3.10 (Updates by m1lkman)```
-   * Added support for windows-x86_64 PMS build. Update-PlexMediaServer will now default to match detected OS architecture build. Use Build parameter for force (i.g. `-Build 'windows-x86'`)
-   * Fix logic to detect active sessions for "in-use" check
+  * Added support for windows-x86_64 PMS build. Update-PlexMediaServer will continue to update the currently installed Build unless forced by Build parameter (i.g. `-Build 'windows-x86_64'`)
+  * Fix logic to detect active sessions for "in-use" check
   * Fix Invoke-WebRequest errors by adding UseBasicParsing parameter (Thanks [SAS-1](https://github.com/SAS-1))
   * Added logic to retry checking Plex Web after process restart to allow for 30 seconds while web server is launching
   * Added Hostname parameter for plex web checks to bypass detecting public hostname using reverse IP lookup (helps for when running multiple PMS instances behind a single public IP)
