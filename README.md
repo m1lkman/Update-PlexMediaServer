@@ -32,24 +32,23 @@ Get-Help Update-PlexMediaServer
 ```
 Syntax
 ```
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Build] [-Hostname] [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Quiet] [-Build] [-Hostname] [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Build] [-Hostname] [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-EmailIsBodyHtml] [-Build] [-Hostname] [<CommonParameters>]
+Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-EmailIsBodyHtml] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-SlackNotify] -SlackChannel <string> -SlackToken <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [<CommonParameters>]
+Update-PlexMediaServer [-SlackNotify] -SlackChannel <string> -SlackToken <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [[-Build] [-Hostname] [<CommonParameters>]
+Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [[-Build] [-Hostname] [-ReportOnly]  [<CommonParameters>]
 
-Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname]
-[<CommonParameters>]
+Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [<CommonParameters>]
+Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-Build] [-Hostname] [<CommonParameters>]
+Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 ```
 ### Examples
 For local interactive default execution using Plex Server Online token (requires Plex Server is logged in and claimed) to authenticate to Plex.tv for updates (will honor Plex Server Update Channel Setting):
@@ -162,6 +161,7 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
   * Added logic to retry checking Plex Web after process restart to allow for 30 seconds while web server is launching
   * Added Hostname parameter for plex web checks to bypass detecting public hostname using reverse IP lookup (helps for when running multiple PMS instances behind a single public IP)
   * Added ReportOnly parameter, script will report if update is reqiured and exit
+  * Other general improvments/fixes
 
 ```v2.0.4 2017.11.15 (Updates by m1lkman)```
   * Added new logic to detect Live TV and DVR sessions to "in-use" check
