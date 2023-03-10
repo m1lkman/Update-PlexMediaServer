@@ -155,7 +155,7 @@ Function Update-PlexMediaServer
     #
     [Parameter(
         ValueFromPipelineByPropertyName=$true,
-        HelpMessage="Enter non-standard Plex Media Server Port, default is 32400")]
+        HelpMessage="Enter Host name for Plex Web Checks, if not specified http://ipinfo.io is used to determing public IP")]
 
         [String]
         $HostName,
@@ -928,6 +928,14 @@ Function Update-PlexMediaServer
 
             if(-not $quiet){Write-Host "Updating Plex Media Server..." -ForegroundColor Cyan -NoNewline}
             #Start Silent install of PMS
+
+            # x64 installer
+            # /SILENT, /VERYSILENT - Instructs Setup to be silent or very silent.
+            # /SUPPRESSMSGBOXES - Instructs Setup to suppress message boxes.
+            # /NOCANCEL - Prevents the user from cancelling during the installation process.
+            # /NORESTART - Prevents Setup from restarting the system following a successful installation, or after a Preparing to Install failure that requests a restart.
+
+            # x86 installer
             # /install | /repair | /uninstall | /layout - installs, repairs, uninstalls or creates a compelte local copy of bundle in directory. Install is the default
             # /passive | /quiet - displays minimal UI with no prompts or display no UI and no prompts. By default UI and all prompts are displayed.
             
