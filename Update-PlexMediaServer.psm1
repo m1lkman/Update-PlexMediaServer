@@ -873,10 +873,11 @@ Function Update-PlexMediaServer
                     }else{
                         $LocalAppDataPath = "$env:SystemDrive\Users\$UserName\AppData\Loca\Plex Media Server"
                     }
-                    if($LogFile){Write-Log -Message "Checking default local application data path ($LocalAppDataPath) for Updates" -Path $LogFile -Level Info}                
+                    if($LogFile){Write-Log -Message "LocalAppDataPath: $LocalAppDataPath" -Path $LogFile -Level Info}
                 }
             }
             #Check if Update already downloaded and has valid checksum
+            if($LogFile){Write-Log -Message "Checking default local application data path ($LocalAppDataPath) for Updates" -Path $LogFile -Level Info}                
             if((Test-Path -Path "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe") -and `
             ((Get-FileHash "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe" -Algorithm SHA1).Hash -ieq $releaseChecksum)){
                 if($LogFile){Write-Log -Message "Latest update file found with matching checksum ($LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe)" -Path $LogFile -Level Info}
@@ -937,7 +938,6 @@ Function Update-PlexMediaServer
                 return
             }
 
-
             #Stop Plex Media Server Service Wrapper (PlexService)
             if($PmsService){
                 if($PmsService.status -ne 'Stopped'){
@@ -985,6 +985,7 @@ Function Update-PlexMediaServer
 
             # x64 installer
             # /SILENT, /VERYSILENT - Instructs Setup to be silent or very silent.
+            # /RESTARTEXITCODE=exit code Specifies a custom exit code that Setup is to return when the system needs to be restarted.
             # /SUPPRESSMSGBOXES - Instructs Setup to suppress message boxes.
             # /NOCANCEL - Prevents the user from cancelling during the installation process.
             # /NORESTART - Prevents Setup from restarting the system following a successful installation, or after a Preparing to Install failure that requests a restart.
@@ -994,29 +995,35 @@ Function Update-PlexMediaServer
             # /passive | /quiet - displays minimal UI with no prompts or display no UI and no prompts. By default UI and all prompts are displayed.
 
             #Build ArgumentList
-            if($passive){
-                if($Build -eq "windows-x86"){$ArgumentList = $ArgumentList + " /passive /norestart"}else{$ArgumentList = "/SILENT /SUPPRESSMSGBOXES /NORESTART"} 
-            }elseif($quiet){
-                if($Build -eq "windows-x86"){$ArgumentList = $ArgumentList + " /quite /norestart"}else{$ArgumentList = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"} 
-            }else{
-                if($Build -eq "windows-x86"){$ArgumentList = $ArgumentList + " /norestart"}else{$ArgumentList = "/NORESTART"} 
+            switch ($Build) {
+                windows-x86 {
+                    if($passive){
+                        $ArgumentList = $ArgumentList + " /passive /norestart" 
+                    }elseif($quiet){
+                        $ArgumentList = $ArgumentList + " /quite /norestart"
+                    }else{
+                        $ArgumentList = $ArgumentList + " /norestart"
+                    }
+                }
+                windows-x86_64 {
+                    if($passive){
+                        $ArgumentList = "/NORESTART /RESTARTEXITCODE=3010 /SILENT /SUPPRESSMSGBOXES"
+                    }elseif($quiet){
+                        $ArgumentList = "/NORESTART /RESTARTEXITCODE=3010 /SUPPRESSMSGBOXES /VERYSILENT "
+                    }else{
+                        $ArgumentList = "/NORESTART /RESTARTEXITCODE=3010"
+                    }
+                }
+                Default {if($LogFile){Write-Log -Message "Unnkown Build Value" -Path $LogFile -Level Info}}
             }
 
             if($CurrentBuild -eq 'windows-x86_64' -and $build -eq 'windows-x86'){
                 if(-not $quiet){Write-Host "Uninstalling Plex Media Server (x64)..." -ForegroundColor Cyan -NoNewline}
                 if($LogFile){Write-Log -Message "Uninstalling Plex Media Server (x64) before installing 'windows-x86' build" -Path $LogFile -Level Info}
 
-                if($passive){
-                    $UninstallArgumentList = $UninstallArgumentList + "/SILENT /SUPPRESSMSGBOXES /NORESTART"
-                }elseif($quiet){
-                    $UninstallArgumentList = $UninstallArgumentList + "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"
-                }else{
-                    $UninstallArgumentList = $UninstallArgumentList + "/NORESTART"
-                }
-
                 foreach($UninstallString in $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayName -like 'Plex Media Server*'}).UninstallString){
-                    if($LogFile){Write-Log -Message "Uninstalling Plex Media Server (x64) update Process: $UninstallString $UninstallArgumentList" -Path $LogFile -Level Info}
-                    $Process = Start-Process -FilePath $UninstallString -ArgumentList $UninstallArgumentList -PassThru
+                    if($LogFile){Write-Log -Message "Uninstalling Plex Media Server (x64) update Process: $UninstallString $ArgumentList" -Path $LogFile -Level Info}
+                    $Process = Start-Process -FilePath $UninstallString -ArgumentList $ArgumentList -PassThru
                     While(Get-Process -Id $Process.Id -ErrorAction SilentlyContinue){
                         Start-Sleep -Seconds 4
                         if(-not $quiet){Write-Host "." -ForegroundColor Cyan -NoNewline}
