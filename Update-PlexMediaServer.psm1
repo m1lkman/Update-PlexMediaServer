@@ -2,63 +2,20 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-   Module for managing Plex Media Server updates running Plex Media Server Service Wrapper (PlexService).
-
+   Module for managing Plex Media Server updates running Plex Media Server Service Wrapper (PmsService).
 .DESCRIPTION
-   Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or Beta(PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
-
-.PARAMETER UseServerToken
-.PARAMETER PlexToken
-.PARAMETER Credential
-.PARAMETER PlexLogin
-.PARAMETER PlexPassword
-.PARAMETER DisablePlexPass
-.PARAMETER PlexServerPort
-.PARAMETER PlexServerHostName
-.PARAMETER UserName
-.PARAMETER LogFile
-.PARAMETER Force
-.PARAMETER ReportOnly
-.PARAMETER Build
-.PARAMETER UpdateCleanup
-.PARAMETER Passive
-.PARAMETER Quiet
-.PARAMETER SlackNotify
-.PARAMETER SlackChannel
-.PARAMETER SlackToken
-.PARAMETER EmailNotify
-.PARAMETER AttachLog
-.PARAMETER IncludeLog
-.PARAMETER SmtpTo
-.PARAMETER SmtpFrom
-.PARAMETER SmtpUser
-.PARAMETER SmtpPassword
-.PARAMETER SmtpServer
-.PARAMETER SmtpPort
-.PARAMETER EnableSSL
-.PARAMETER EmailIsBodyHtml
-
-.INPUTS
-.OUTPUTS
-  Log file 
-
-.EXAMPLE
-Run Interactively and attempt to update from publicly available updates.
+   Windows PowerShell module for managning and automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or Beta(PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
+.EXAMPLE Run Interactively and attempt to update from publicly available updates.
    Update-PlexMediaServer
-.EXAMPLE
-Force Upgrade/reinstall even if version is greater than or equal to
+.EXAMPLE Force Upgrade/reinstall even if version is greater than or equal to
    Update-PlexMediaServer -force
-.EXAMPLE
-Run Interactively and specify a user other than the context the script is executing in.
+.EXAMPLE Run Interactively and specify a user other than the context the script is executing in.
    Update-PlexMediaServer -UserName JDoe
-.EXAMPLE
-Run interactively and attempt to update from PlexPass(Beta) available updates. Will prompt for Plex.tv Email/Id and password.
+.EXAMPLE Run interactively and attempt to update from PlexPass(Beta) available updates. Will prompt for Plex.tv Email/Id and password.
    Update-PlexMediaServer -PlexPass
-.EXAMPLE
-Run silently and attempt to update from PlexPass(Beta) available updates.
-    Update-PlexMediaServer -PlexToken <Token> -Quiet
-.EXAMPLE
-Run Passive and update using Server Online Authentication Token.
+.EXAMPLE Run silently and attempt to update from PlexPass(Beta) available updates.
+   Update-PlexMediaServer -PlexToken <Token> -Quiet
+.EXAMPLE Run Passive and update using Server Online Authentication Token.
    Update-PlexMediaServer -PlexServerToken -Passive
 .EXAMPLE
    Update-PlexMediaServer -PlexLogin <Email/ID> -PlexPassword <Password>
@@ -615,28 +572,35 @@ Function Update-PlexMediaServer
                 if($LogFile){Write-Log -Message "Plex Media Server Settings found in Registry [Count: $($PMSSettingsKeys.Count)]" -Path $LogFile -Level Info}
                 foreach($Key in $PmsSettingsKeys){
                     if(Get-ItemProperty "$($Key.InstallFolder)\Plex Media Server.exe" -OutVariable PMSExeFile -ErrorAction SilentlyContinue){
-                        if($LogFile){Write-Log -Message "Plex Media Server installation found in $InstallFolder" -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Plex Media Server installation found in $($Key.InstallFolder)" -Path $LogFile -Level Info}
+                        $InstallFolder=$Key.InstallFolder
+                        if($LogFile){Write-Log -Message "InstallFolder: $InstallFolder" -Path $LogFile -Level Info}
+                    }else{
+                        if($LogFile){Write-Log -Message "Plex Settings not found in key $($Key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::',''))" -Path $LogFile -Level Info}
+                    }
+                    if([string]::IsNullOrEmpty($Key.PlexOnlineMail) -or [string]::IsNullOrEmpty($Key.PlexOnlineMail) -or [string]::IsNullOrEmpty($Key.PlexOnlineMail)){
+                        if($LogFile){Write-Log -Message "Plex Settings found in key $($Key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::','')) are missing values, Plex Media Server may not be logged in and claimed" -Path $LogFile -Level Info}
+                    }else{
                         $PMSSettings=$Key
                         if($LogFile){Write-Log -Message "Plex Settings Key Found $($Key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::',''))" -Path $LogFile -Level Info}
                         switch($PmsSettings.ButlerUpdateChannel){
+                            ''{$ButlerUpdateChannel="Public"}
                             0{$ButlerUpdateChannel="Public"}
                             8{$ButlerUpdateChannel="Beta"}
+                            default {if($LogFile){Write-Log -Message "Unknown Update Channel Value [$_]" -Path $LogFile -Level Info}}
+
                         }
                         if($LogFile){Write-Log -Message "UpdateChannel: $ButlerUpdateChannel" -Path $LogFile -Level Info}
                         $LocalAppDataPath=$PmsSettings.LocalAppDataPath
                         if($LogFile){Write-Log -Message "LocalAppDataPath: $LocalAppDataPath" -Path $LogFile -Level Info}
-                        $InstallFolder=$PmsSettings.InstallFolder
-                        if($LogFile){Write-Log -Message "InstallFolder: $InstallFolder" -Path $LogFile -Level Info}
                         $PlexOnlineMail=$PmsSettings.PlexOnlineMail
                         if($LogFile){Write-Log -Message "PlexOnlineMail: $PlexOnlineMail" -Path $LogFile -Level Info}
                         $PlexOnlineUsername=$PmsSettings.PlexOnlineUsername
                         if($LogFile){Write-Log -Message "PlexOnlineUsername: $PlexOnlineUsername" -Path $LogFile -Level Info}
                         $PlexOnlineToken=$PmsSettings.PlexOnlineToken
                         if($LogFile){Write-Log -Message "PlexOnlineToken: $PlexOnlineToken" -Path $LogFile -Level Info}
-                        Break #break from foreach
-                    }else{
-                        if($LogFile){Write-Log -Message "Plex Settings not found in key $($Key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::',''))" -Path $LogFile -Level Info}
                     }
+                    if($InstallFolder -and $PlexOnlineToken){Break}
                 }
             }else{
                 if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry" -Path $LogFile -Level Info}
@@ -645,9 +609,9 @@ Function Update-PlexMediaServer
             if($UseServerToken){
                 if((Get-RestMethod -Uri "https://plex.tv/api/resources?X-Plex-Token=$PlexOnlineToken" -OutVariable response -PassThru -ErrorAction SilentlyContinue).exception){
                     if($response.exception.Response){
-                        if($LogFile){Write-Log -Message "Plex Server Online Authentication Token was not validated. Please verify or use Get-PlexToken to retrieve again. Server Response: $($response.exception.message)" -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Plex Server Online Authentication Token was not validated. Please verify Plex Server is logged in and clamed. Server Response: $($response.exception.message)" -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Server Online Token Authentication Failed" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Please verify specified Plex Server Online Autentication Token or use Get-PlexToken to retrieve one." -ForegroundColor Cyan}
+                        if(-not $quiet){Write-Host "Please verify Plex Server is logged in and claimed." -ForegroundColor Cyan}
                     }else{
                         if($LogFile){Write-Log -Message "Unable to verify Plex Server Online Authentication Token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)" -Path $LogFile -Level Info}
                         if(-not $quiet){Write-Host "Unable to validate Server Online Token" -ForegroundColor Red}
@@ -662,6 +626,7 @@ Function Update-PlexMediaServer
                     if(-not $quiet){Write-Host "`t Update Channel: $ButlerUpdateChannel" -ForegroundColor Cyan}
                 }
                 $PlexToken=$PlexOnlineToken
+                if($ButlerUpdateChannel -eq "Public"){$DisablePlexPass=$true}
             }
 
             if(-not $quiet){Write-Host "Checking Plex Media Server Status..." -ForegroundColor Cyan -NoNewline}
@@ -752,6 +717,7 @@ Function Update-PlexMediaServer
                             if(-not $quiet){Write-Host "Unknown Response. Message: $($PlexWeb.exception.Response.StatusDescription) (Error: $($PlexWeb.exception.Response.StatusCode.value__)" -ForegroundColor Red}
                         }
                     }
+                    if(-not $quiet){Write-Host "Error Connecting" -ForegroundColor Red}
                 }else{
                     if(-not $quiet){Write-Host "Available" -ForegroundColor Cyan}
                     if($PlexWeb[0].MediaContainer){
@@ -761,7 +727,7 @@ Function Update-PlexMediaServer
                         if(-not $quiet){Write-Host "`t Signin State: $($PlexWeb[0].MediaContainer.myPlexSigninState)" -ForegroundColor Cyan}
                         if(-not $quiet){Write-Host "`t Platform: $($PlexWeb[0].MediaContainer.platform)" -ForegroundColor Cyan}
                         if(-not $quiet){Write-Host "`t Platform Version: $($PlexWeb[0].MediaContainer.platformVersion)" -ForegroundColor Cyan}
-                        switch (PlexWeb[0].MediaContainer.myPlexSubscription) {
+                        switch ($PlexWeb[0].MediaContainer.myPlexSubscription) {
                             0 {
                                 if(-not $quiet){Write-Host "`t Plex Subscription: False" -ForegroundColor Cyan}
                                 $PlexPassStatus="False"
@@ -795,9 +761,10 @@ Function Update-PlexMediaServer
                         }
                     }elseif($PlexWebPrefs[0].MediaContainer.Setting){
                         switch(($PlexWebPrefs[0].MediaContainer.Setting | Where-Object {$_.id -eq 'ButlerUpdateChannel'}).Value){
+                            ''{if(-not $ButlerUpdateChannel){$ButlerUpdateChannel="Public"}}
                             0{if(-not $ButlerUpdateChannel){$ButlerUpdateChannel="Public"}}
                             8{if(-not $ButlerUpdateChannel){$ButlerUpdateChannel="Beta"}}
-                            default {if(-not $quiet){Write-Host "`t Update Channel: Unknown Value [$_]" -ForegroundColor Red}}
+                            default {if($LogFile){Write-Log -Message "Unknown Update Channel Value [$_]" -Path $LogFile -Level Info}}
                         }
                         if($ButlerUpdateChannel){if(-not $quiet){Write-Host "`t Update Channel: $ButlerUpdateChannel" -ForegroundColor Cyan}}
                     }else{
@@ -1042,22 +1009,21 @@ Function Update-PlexMediaServer
             }
 
             #Find Plex Media Server Install Key if process not running
-            $PMSInstallKeys=Get-ItemProperty HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*,HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object { $_.DisplayName -like 'Plex Media Server*' -and $_.Publisher -like 'Plex, Inc.*' -and -not [string]::IsNullOrEmpty($_.InstallLocation) }
-            if(Get-ItemProperty "$($PMSInstallKeys | Select-Object -ExpandProperty InstallLocation -OutVariable InstallFolder)\Plex Media Server.exe" -OutVariable PMSExeFile -ErrorAction SilentlyContinue){
-                if($LogFile){Write-Log -Message "Plex Media Server installation found in $InstallFolder" -Path $LogFile -Level Info}
-            }else{
-                if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry" -Path $LogFile -Level Info}
-            }
-            $PMSInstallKeys=("HKLM:\Software\Wow6432Node\Plex, Inc.\Plex Media Server","HKLM:\Software\Plex, Inc.\Plex Media Server")
-            foreach($Key in $PMSInstallKeys){
-                if(Test-Path $Key -ErrorAction SilentlyContinue){
-                    if(Get-ItemProperty "$(Get-ItemProperty $Key -Name "InstallFolder" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty InstallFolder -OutVariable InstallFolder)\Plex Media Server.exe" -OutVariable PMSExeFile -ErrorAction SilentlyContinue){
-                        if($LogFile){Write-Log -Message "Plex Media Server installation found in $InstallFolder" -Path $LogFile -Level Info}
-                        Break
+            $PMSSettingsKeys=Get-ItemProperty 'HKU:\*\SOFTWARE\Plex, Inc.\Plex Media Server','HKLM:\SOFTWARE\Plex, Inc.\Plex Media Server','HKLM:\SOFTWARE\WOW6432Node\Plex, Inc.\Plex Media Server' -ErrorAction SilentlyContinue
+            if($PMSSettingsKeys){
+                if($LogFile){Write-Log -Message "Plex Media Server Settings found in Registry [Count: $($PMSSettingsKeys.Count)]" -Path $LogFile -Level Info}
+                foreach($Key in $PmsSettingsKeys){
+                    if(Get-ItemProperty "$($Key.InstallFolder)\Plex Media Server.exe" -OutVariable PMSExeFile -ErrorAction SilentlyContinue){
+                        if($LogFile){Write-Log -Message "Plex Media Server installation found in $($Key.InstallFolder)" -Path $LogFile -Level Info}
+                        $InstallFolder=$Key.InstallFolder
+                        if($LogFile){Write-Log -Message "InstallFolder: $InstallFolder" -Path $LogFile -Level Info}
+                        break
                     }else{
-                        if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry Key $Key" -Path $LogFile -Level Info}
+                        if($LogFile){Write-Log -Message "Plex Settings not found in key $($Key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::',''))" -Path $LogFile -Level Info}
                     }
                 }
+            }else{
+                if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry" -Path $LogFile -Level Info}
             }
             
             if($Process.ExitCode -eq 0){
@@ -1178,6 +1144,7 @@ Function Update-PlexMediaServer
                         if(-not $quiet){Write-Host "Unknown Response. Message: $($PlexWeb.exception.Response.StatusDescription) (Error: $($PlexWeb.exception.Response.StatusCode.value__)" -ForegroundColor Red}
                     }
                 }
+                if(-not $quiet){Write-Host "Error Connecting" -ForegroundColor Red}
             }elseif($PlexWeb[0].MediaContainer){
                 if(-not $quiet){Write-Host "Available" -ForegroundColor Cyan}
                 if($PlexWeb[0].MediaContainer){
