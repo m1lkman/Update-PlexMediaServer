@@ -151,9 +151,18 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 * Q: How do I get a Plex authentication token? (I don't trust your Get-PlexToken code)
 * A: Follow Plex's Support Article [Finding an authentication token / X-Plex-Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
 * Q: How often will you update the module?
-* A: That is entirely up to you! Create some issues or fork and fix/add whe you need.
+* A: That is entirely up to you! Create some issues or fork and fix/add what you need.
 
 ## Version Information
+```v2.0.6 2023.3.11 (Updates by m1lkman)```
+  * Fixed Token Regex verification (added - and _)
+  * Fixed logic for searching registry for InstallLocation and PlexOnlineToken that were causing issues on systems that have had both x86 and x64 builds installed previously
+  * Improved Update Channel detection logic
+  * Improved some error messages
+  * Added additional logic to uninstall x64 build first before installing x86 build if present
+  * Improved exit code matching specifically for x64 installer
+  * Other various cleanups, fixes, & improvements
+
 ```v2.0.5 2023.3.10 (Updates by m1lkman)```
   * Added support for windows-x86_64 PMS build. Update-PlexMediaServer will continue to update the currently installed Build unless forced by Build parameter (i.g. `-Build 'windows-x86_64'`)
   * Fix logic to detect active sessions for "in-use" check
