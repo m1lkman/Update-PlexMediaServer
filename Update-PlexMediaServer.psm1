@@ -66,7 +66,7 @@ Function Update-PlexMediaServer
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="Enter Plex Authentication Token (Use Get-PlexToken to get your token from Plex.tv")]
     [ValidateScript({
-        if($_ -match "[0-9a-z]{20}"){
+        if($_ -match "[0-9a-z_]{20}"){
             $true
         }else{
             throw "Please provide a Plex Authentication Token matching the format abcde12345abcde12345 (20 alpha-numeric characters)."
