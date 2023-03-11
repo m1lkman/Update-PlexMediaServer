@@ -693,11 +693,12 @@ Function Update-PlexMediaServer
                 if($LogFile){Write-Log -Message "HostName is $hostname" -Path $LogFile -Level Info}
             }
 
-            $PlexServerUri="http://$($hostname):$PlexServerPort/"
-            $PlexServerPrefsUri="http://$($hostname):$PlexServerPort/:/prefs/"
-            $PlexServerLocationUri="http://$($hostname):$PlexServerPort/servers/"
-            $PlexServerSessionUri="http://$($hostname):$PlexServerPort/status/sessions/"
-            $PlexServerLiveTvSessionUri="http://$($hostname):$PlexServerPort/livetv/sessions/"
+            if($PlexServerPort -eq 443){$PlexServerScheme='https'}else{$PlexServerScheme='http'}
+            $PlexServerUri="$($PlexServerScheme)://$($hostname):$PlexServerPort/"
+            $PlexServerPrefsUri="$($PlexServerScheme)://$($hostname):$PlexServerPort/:/prefs/"
+            $PlexServerLocationUri="$($PlexServerScheme)://$($hostname):$PlexServerPort/servers/"
+            $PlexServerSessionUri="$($PlexServerScheme)://$($hostname):$PlexServerPort/status/sessions/"
+            $PlexServerLiveTvSessionUri="$($PlexServerScheme)://$($hostname):$PlexServerPort/livetv/sessions/"
             if($Plextoken){
                 $PlexServerUri=$PlexServerUri + "?X-Plex-Token=$($PlexToken)"
                 $PlexServerPrefsUri=$PlexServerPrefsUri + "?X-Plex-Token=$($PlexToken)"
