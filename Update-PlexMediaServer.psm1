@@ -2,20 +2,63 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-   Module for managing Plex Media Server updates running Plex Media Server Service Wrapper (PmsService).
+   Module for managing Plex Media Server updates running Plex Media Server Service Wrapper (PlexService).
+
 .DESCRIPTION
-   Windows PowerShell module for managning and automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or Beta(PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
-.EXAMPLE Run Interactively and attempt to update from publicly available updates.
+   Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or Beta(PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
+
+.PARAMETER UseServerToken
+.PARAMETER PlexToken
+.PARAMETER Credential
+.PARAMETER PlexLogin
+.PARAMETER PlexPassword
+.PARAMETER DisablePlexPass
+.PARAMETER PlexServerPort
+.PARAMETER PlexServerHostName
+.PARAMETER UserName
+.PARAMETER LogFile
+.PARAMETER Force
+.PARAMETER ReportOnly
+.PARAMETER Build
+.PARAMETER UpdateCleanup
+.PARAMETER Passive
+.PARAMETER Quiet
+.PARAMETER SlackNotify
+.PARAMETER SlackChannel
+.PARAMETER SlackToken
+.PARAMETER EmailNotify
+.PARAMETER AttachLog
+.PARAMETER IncludeLog
+.PARAMETER SmtpTo
+.PARAMETER SmtpFrom
+.PARAMETER SmtpUser
+.PARAMETER SmtpPassword
+.PARAMETER SmtpServer
+.PARAMETER SmtpPort
+.PARAMETER EnableSSL
+.PARAMETER EmailIsBodyHtml
+
+.INPUTS
+.OUTPUTS
+  Log file 
+
+.EXAMPLE
+Run Interactively and attempt to update from publicly available updates.
    Update-PlexMediaServer
-.EXAMPLE Force Upgrade/reinstall even if version is greater than or equal to
+.EXAMPLE
+Force Upgrade/reinstall even if version is greater than or equal to
    Update-PlexMediaServer -force
-.EXAMPLE Run Interactively and specify a user other than the context the script is executing in.
+.EXAMPLE
+Run Interactively and specify a user other than the context the script is executing in.
    Update-PlexMediaServer -UserName JDoe
-.EXAMPLE Run interactively and attempt to update from PlexPass(Beta) available updates. Will prompt for Plex.tv Email/Id and password.
+.EXAMPLE
+Run interactively and attempt to update from PlexPass(Beta) available updates. Will prompt for Plex.tv Email/Id and password.
    Update-PlexMediaServer -PlexPass
-.EXAMPLE Run silently and attempt to update from PlexPass(Beta) available updates.
-   Update-PlexMediaServer -PlexToken <Token> -Quiet
-.EXAMPLE Run Passive and update using Server Online Authentication Token.
+.EXAMPLE
+Run silently and attempt to update from PlexPass(Beta) available updates.
+    Update-PlexMediaServer -PlexToken <Token> -Quiet
+.EXAMPLE
+Run Passive and update using Server Online Authentication Token.
    Update-PlexMediaServer -PlexServerToken -Passive
 .EXAMPLE
    Update-PlexMediaServer -PlexLogin <Email/ID> -PlexPassword <Password>
@@ -66,7 +109,7 @@ Function Update-PlexMediaServer
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="Enter Plex Authentication Token (Use Get-PlexToken to get your token from Plex.tv")]
     [ValidateScript({
-        if($_ -match "[0-9a-z-_]{20}"){
+        if($_ -match "[0-9a-zA-Z-_]{20}"){
             $true
         }else{
             throw "Please provide a Plex Authentication Token matching the format abcde12345abcde12345 (20 alpha-numeric characters)."
