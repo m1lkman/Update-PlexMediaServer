@@ -9,7 +9,7 @@ Windows PowerShell module for automating Plex Media Server updates when running 
  
   Plex Media Server 1.7 or later (https://www.plex.tv/downloads/)
 
-  [Cjmurph's Plex Media Server Service Wrapper](https://github.com/cjmurph/PmsService) (PMS as a Service)
+  Cjmurph's [Plex Media Server Service Wrapper](https://github.com/cjmurph/PmsService)
   * 1.0.3 or later for PMS windows-x86 builds
   * 1.2.1.0 or later for windows-x86_64 builds
 ### Installation
