@@ -1,14 +1,17 @@
 # Plex Media Server Updater PowerShell Module
-Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking latest Plex Media Server public or beta channel (PlexPass) versions, downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and email notification. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
+Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking for the latest Plex Media Server public or beta channel (PlexPass) versions, checking if the server is "in-use", downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and notifications. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
 ### Prerequisites
-  One of the following Operating Systems with supported PowerShell version.
+  Supported Operating Systems with supported PowerShell version.
   * Windows 7/Windows Server 2008 with PowerShell 4.0 or later
-  * Windows 8/Windows Server 2012 with PowerShell 5.0 or later
-  * Windows 10/Windows Server 2016 with PowerShell 5.0 or later
+  * Windows 8/10/11/Windows Server 2012/2016/2019/2022 with PowerShell 5.0 or later
+ 
+  Plex Media Server (https://www.plex.tv/downloads/)
+  * 1.7 or later (windows-x86)
+  * 1.29 or later (windows-x86_64)
 
-  Plex Media Server 1.7 or later (https://www.plex.tv/downloads/)
-
-  Cjmurph's Plex Media Server Service Wrapper (PMS as a Service) 1.0.3 or later (https://github.com/cjmurph/PmsService) 
+  Cjmurph's [Plex Media Server Service Wrapper](https://github.com/cjmurph/PmsService)
+  * 1.0.3 or later for PMS windows-x86 builds
+  * 1.2.1 or later for PMS windows-x86_64 builds
 ### Installation
 1. Save the module file (Update-PlexMediaServer.psm1) to a folder of the same name in one of your PowerShell module directories  (%ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer or %UserProfile%\Documents\WindowsPowerShell\Modules by default). See [Installing a Powershell Module](https://msdn.microsoft.com/en-us/library/dd878350).
 Or using git, execute the following commands:
@@ -29,28 +32,26 @@ Get-Help Update-PlexMediaServer
 ```
 Syntax
 ```
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-EmailIsBodyHtml] [-WhatIf] [-Confirm]   [<CommonParameters>]
+Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-EmailIsBodyHtml] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-SlackNotify] -SlackChannel <string> -SlackToken <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-SlackNotify] -SlackChannel <string> -SlackToken <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]  [<CommonParameters>]
+Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [[-Build] [-Hostname] [-ReportOnly]  [<CommonParameters>]
 
-Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]
-[<CommonParameters>]
+Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm]
-[<CommonParameters>]
+Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 
-Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-WhatIf] [-Confirm] [<CommonParameters>]
+Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
 ```
 ### Examples
-For local interactive default execution using Plex Server Online token (requires Plex Server is logged in and Claimed) to authenticate to Plex.tv for updates (will honor Plex Server Update Channel Setting):
+For local interactive default execution using Plex Server Online token (requires Plex Server is logged in and claimed) to authenticate to Plex.tv for updates (will honor Plex Server Update Channel Setting):
 ```
 Update-PlexMediaServer
 ```
@@ -81,6 +82,14 @@ Update-PlexMediaServer -PlexLogin <Email/ID> -PlexPassword <Password> -Quiet
 to disable beta channel (PlexPass) updates and cleanup all Updates from the Updates folder except the latest 2:
 ```
 Update-PlexMediaServer -DisablePlexPass -UpdateCleanup 2
+```
+force checking for build windows-x86_64 even if windows-x86 build is installed, i.g. upgrade to 64-bit
+```
+Update-PlexMediaServer -Build 'windows-x86_64'
+```
+check plex running on localhost and bypass public IP reverse DNS lookup
+```
+Update-PlexMediaServer -PlexServerHostname 'localhost'
 ```
 To enable email notifications:
 ```
@@ -120,6 +129,8 @@ Add arguments
 
 ### Find Your Plex Authentication Token (Get-PlexToken)
 Get Plex Authentication token so you don't have to save your credentials in your scripts or scheduled tasks (will prompt if either value is missing when running interactively):
+
+Note: [Plex Two Factor Authentication](https://support.plex.tv/articles/two-factor-authentication/) must be disabled (i.e. temporarily) 
 ```
 Get-PlexToken -PlexLogin <Email/ID> -Password <Password>
 ```
@@ -134,11 +145,29 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 * Q: How do you set the current users PowerShell execution policy?
 * A: Open PowerShell as an Administrator, and run the following command: Set-ExecutionPolicy -Scope CurrentUser Unrestricted
 * Q: How do you install this module?
-* A: Create a folder called Update-PlexMediaServer in the %ProgramFiles%\WindowsPowerShell\Modules directory, and then copy the module Update-PlexMediaServer.psm1 into the %ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer directory.
+* A: Create a folder called Update-PlexMediaServer in the %ProgramFiles%\WindowsPowerShell\Modules directory, copy the module Update-PlexMediaServer.psm1 into the %ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer directory, and then run `Immport-Module .\Update-PlexMediaServer`.
+* Q: How do I uninstall this module?
+* A: Run `Remove-Module Update-PlexMedaiServer` and then delete the folder and it's contents you created.
+* Q: How do I get a Plex authentication token? (I don't trust your Get-PlexToken code)
+* A: Follow Plex's Support Article [Finding an authentication token / X-Plex-Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
 * Q: How often will you update the module?
 * A: That is entirely up to you! Create some issues or fork and fix/add whe you need.
 
 ## Version Information
+```v2.0.5 2023.3.10 (Updates by m1lkman)```
+  * Added support for windows-x86_64 PMS build. Update-PlexMediaServer will continue to update the currently installed Build unless forced by Build parameter (i.g. `-Build 'windows-x86_64'`)
+  * Fix logic to detect active sessions for "in-use" check
+  * Fix Invoke-WebRequest errors by adding UseBasicParsing parameter (Thanks [SAS-1](https://github.com/SAS-1))
+  * Added logic to retry checking Plex Web after process restart to allow for 30 seconds while web server is launching
+  * Added Hostname parameter for plex web checks to bypass detecting public hostname using reverse IP lookup (helps for when running multiple PMS instances behind a single public IP)
+  * Added ReportOnly parameter, script will report if update is reqiured and exit
+  * Add support for https url scheme when using custom port 443 `-PlexServerPort 443`
+  * Other general improvments/fixes
+
+```v2.0.4 2017.11.15 (Updates by m1lkman)```
+  * Added new logic to detect Live TV and DVR sessions to "in-use" check
+  * Improved logic for stopping PlexService Service 
+  
 ```v2.0.3 2017.11.10 (Updates by m1lkman)```
   * Added -IncludeLog parameter for including log text in notification email (renamed EmailLog to AttachLog)
   * Added -EmailIsBodyHtml parameter to switch email to mobile friendly HTML format 
