@@ -161,6 +161,7 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
   * Added logic to retry checking Plex Web after process restart to allow for 30 seconds while web server is launching
   * Added Hostname parameter for plex web checks to bypass detecting public hostname using reverse IP lookup (helps for when running multiple PMS instances behind a single public IP)
   * Added ReportOnly parameter, script will report if update is reqiured and exit
+  * Add support for https url scheme when using custom port 443 `-PlexServerPort 443`
   * Other general improvments/fixes
 
 ```v2.0.4 2017.11.15 (Updates by m1lkman)```
