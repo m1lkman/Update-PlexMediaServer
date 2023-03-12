@@ -155,6 +155,9 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 
 ## Version Information
 ```v2.0.6 2023.3.11 (Updates by m1lkman)```
+  * Improved error handling
+
+```v2.0.6 2023.3.11 (Updates by m1lkman)```
   * Fixed Token Regex verification (added - and _)
   * Fixed logic for searching registry for InstallLocation and PlexOnlineToken that were causing issues on systems that have had both x86 and x64 builds installed previously
   * Improved Update Channel detection logic
