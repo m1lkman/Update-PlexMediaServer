@@ -1301,100 +1301,90 @@ function Get-PlexToken{
     param(
     #
     [Parameter(
-                ParameterSetName="Credential",
-                Position=0,
-                ValueFromPipelineByPropertyName=$true)]
+        Position=0,
+        ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
 
-                [string]$PlexLogin,
+        [string]$PlexLogin,
 
     #
     [Parameter(
-                ParameterSetName="Credential",
-                Position=1,
-                ValueFromPipelineByPropertyName=$true)]
+        Position=1,
+        ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
 
-                [string]$PlexPassword,
+        [string]$PlexPassword,
 
     #
     [parameter()]
 
-                [Switch]$PassThru,
+        [Switch]$PassThru,
 
     #
     [parameter(
-                ParameterSetName="PSCredential",
-                Position=0)]
-    [ValidateNotNull()]
-    [System.Management.Automation.PSCredential]
-    [System.Management.Automation.Credential()]
-    [ValidateScript({
-        if($_ -is [System.Management.Automation.PSCredential]){
-            $True
-        }else{
-            $Script:Credential=Get-Credential -Credential $_ -Message "Enter your Plex.tv credentials:"
-            $True
-        }
+        ParameterSetName="PSCredential",
+        Position=0)]
+        [ValidateNotNull()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        [ValidateScript({
+            if($_ -is [System.Management.Automation.PSCredential]){
+                $True
+            }else{
+                $Script:Credential=Get-Credential -Credential $_ -Message "Enter your Plex.tv credentials:"
+                $True
+            }
         })]
 
-                [object]$Credential = [System.Management.Automation.PSCredential]::Empty 
+        [object]$Credential = [System.Management.Automation.PSCredential]::Empty 
     )
 
     [hashtable]$return=@{}
 
     if($Credential -ne [System.Management.Automation.PSCredential]::Empty) {
-        $PlexLogin=$Credential.UserName
-        $PlexPassword="$([System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)))"
+        $PlexLogin=$Credential.GetNetworkCredential().UserName
+        $PlexPassword=$Credential.GetNetworkCredential().Password
     }
 
-    if($PlexLogin -eq ""){
+    if([string]::IsNullOrEmpty($PlexLogin)){
         $PlexLogin=Read-Host -Prompt "Enter Plex.tv Email or ID"
     }
 
-    if($PlexPassword){
-#        if($PlexPassword.GetType().Name -ne 'SecureString'){
-#            Write-Output $PlexPassword.GetType().Name
-            $Password=$PlexPassword | ConvertTo-SecureString -AsPlainText -Force
-#        }
-    }else{
-        $Password=$(Read-Host -Prompt "Enter Plex.tv password" -AsSecureString)
-    }
-
-    $URL_LOGIN='https://plex.tv/users/sign_in.json'
-
-    $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-    $headers.Add("X-Plex-Client-Identifier", '4a745ae7-1839-e44e-1e42-aebfa578c865')
-    $headers.Add("X-Plex-Product", 'Plex SSO')
-    $postParams= @{
-        'user[login]'="$PlexLogin"
-        'user[password]'="$([System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)))"
-	    'user[remember_me]'=0
+    if([string]::IsNullOrEmpty($PlexPassword)){
+        $PlexPassword=Read-Host -Prompt "Enter Plex.tv password"
     }
 
     try {
-        Invoke-RestMethod -Uri $URL_LOGIN -Headers $headers -Method Post -Body $postParams -TimeoutSec 30 -OutVariable response
-    } catch {
-        $return.exception=$_.Exception
-        $return.Status=1
-    }
+		$response = Invoke-RestMethod -Uri "https://plex.tv/users/sign_in.json" -Method POST -Headers @{
+			'Authorization'            = ("Basic {0}" -f ([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $PlexLogin, $PlexPassword)))));
+			'X-Plex-Client-Identifier' = "PowerShell";
+			'X-Plex-Product'           = 'Get-PlexToken';
+			'X-Plex-Version'           = "2.0.0";
+			'X-Plex-Username'          = $PlexLogin;
+		} -ErrorAction Stop
 
-    if($response){
         Write-Verbose "Plex Authentication Token $($response.user.authToken) found for $($response.user.username)"
-        $return.response=$response
+        $return.user=$response.user
         $return.status=0
         if($PassThru){return $return}else{return $response.user.authToken}
-    }else{
-        if($return.exception.Response){
-            Write-Verbose "Unable to retrieve Plex Token from $URL_LOGIN Message: $($return.exception.Message) (Error: $($return.exception.HResult))"
-            switch($return.exception.Response.StatusCode.value__){
-                401{Write-Verbose "Username and/or password incorrect. StatusDescription: $($return.exception.Response.StatusDescription) (StatusCode: $($return.exception.Response.StatusCode.value__))"}
-                201{Write-Verbose "Failed to log in.  StatusDescription: $($return.exception.Response.StatusDescription) (StatusCode: $($return.exception.Response.StatusCode.value__))"}
-                else{Write-Error "StatusDescription: $($return.exception.Response.StatusDescription) (StatusCode: $($return.exception.Response.StatusCode.value__))"}
+        
+    } catch {
+
+        $return.Exception=$_.Exception
+        $return.Status=1
+        if($return.Exception.Response){
+            Write-Verbose "Unable to retrieve Plex Token from $URL_LOGIN Message: $($return.Exception.Message) (Error: $($return.Exception.HResult))"
+            switch($return.Exception.Response.StatusCode.value__){
+                401{Write-Verbose "Username and/or password incorrect. StatusDescription: $($return.Exception.Response.StatusDescription) (StatusCode: $($return.Exception.Response.StatusCode.value__))"}
+                201{Write-Verbose "Failed to log in.  StatusDescription: $($return.Exception.Response.StatusDescription) (StatusCode: $($return.Exception.Response.StatusCode.value__))"}
+                else{Write-Error "StatusDescription: $($return.Exception.Response.StatusDescription) (StatusCode: $($return.Exception.Response.StatusCode.value__))"}
             }
             if($PassThru){return $return}else{return $false}
         }else{
-            Write-Verbose "Error connecting to $URL_LOGIN Message: $($return.exception.Message) (Error: $($return.exception.HResult))"
+            Write-Verbose "Error connecting to $URL_LOGIN Message: $($return.Exception.Message) (Error: $($return.Exception.HResult))"
             if($PassThru){return $return}else{return $false}
        }
+
     }
 }
 
