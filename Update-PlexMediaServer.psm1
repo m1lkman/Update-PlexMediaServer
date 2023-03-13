@@ -846,7 +846,6 @@ Function Update-PlexMediaServer
                 }
             }else{
                 if($LogFile){Write-Log -Message "Version up-to-date. Available Update version ($releaseVersion) equal to installed version ($installedVersion)." -Path $LogFile -Level Info}
-                if(-not $quiet){Write-Host "Running the latest version $installedVersion." -ForegroundColor Cyan}
                 if($force){
                     $UpdateRequired=$true
                     $ArgumentList = "/repair" 
