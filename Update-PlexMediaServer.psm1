@@ -1297,31 +1297,24 @@ Function Update-PlexMediaServer
 }
 
 function Get-PlexToken{
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Credential')]
     param(
     #
+    [Alias("PlexID")]
     [Parameter(
+        ParameterSetName="Credential",
         Position=0,
         ValueFromPipelineByPropertyName=$true)]
-
+    
         [string]$PlexLogin,
 
     #
     [Parameter(
+        ParameterSetName="Credential",
         Position=1,
         ValueFromPipelineByPropertyName=$true)]
-
+    
         [string]$PlexPassword,
-
-    #
-    [parameter()]
-
-        [Switch]$Plex2FA,
-
-    #
-    [parameter()]
-
-        [Switch]$PassThru,
 
     #
     [parameter(
@@ -1339,9 +1332,21 @@ function Get-PlexToken{
             }
         })]
 
-        [object]$Credential = [System.Management.Automation.PSCredential]::Empty 
+        [object]$Credential = [System.Management.Automation.PSCredential]::Empty,
+    #
+    [parameter()]
+
+        [Switch]$Plex2FA,
+
+    #
+    [parameter()]
+
+        [Switch]$PassThru
+
+
     )
     switch($PSCmdlet.ParameterSetName){
+        "Credential"{Write-Debug "ParameterSetName: $_"}
         "PSCredential"{Write-Debug "ParameterSetName: $_"}
         default{Write-Debug "ParameterSetName: $_"}
     }
