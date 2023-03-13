@@ -835,13 +835,13 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Update Available!!!" -ForegroundColor Green}
                 $ArgumentList = "/install" 
             }elseif([version]$releaseVersion -lt [version]$installedVersion){
-                if($LogFile){Write-Log -Message "Available Update version ($releaseVersion) greater than installed version ($installedVersion)." -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Available Update version ($releaseVersion) less than installed version ($installedVersion)." -Path $LogFile -Level Info}
                 if($force){
                     $UpdateRequired=$true
                     $ArgumentList = "/install"
                     if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
                 }else{
-                    if(-not $quiet){Write-Host "Available Update version ($releaseVersion) greater than installed version ($installedVersion). Use -force to force installation." -ForegroundColor Cyan}
+                    if(-not $quiet){Write-Host "Available Update version ($releaseVersion) less than installed version ($installedVersion). Use -force to force installation." -ForegroundColor Cyan}
                     return
                 }
             }else{
