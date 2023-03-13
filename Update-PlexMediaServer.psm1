@@ -66,7 +66,7 @@ Function Update-PlexMediaServer
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="Enter Plex Authentication Token (Use Get-PlexToken to get your token from Plex.tv")]
     [ValidateScript({
-        if($_ -match "[0-9a-zA-Z-_]{20}"){
+        if($_ -match "[-_0-9a-zA-Z]{20}"){
             $true
         }else{
             throw "Please provide a Plex Authentication Token matching the format abcde12345abcde12345 (20 alpha-numeric characters)."
@@ -136,6 +136,13 @@ Function Update-PlexMediaServer
 
         [string]
         $PlexPassword,
+
+    #  
+    [Parameter(
+        HelpMessage="Enables Plex Two-Factor auth code support")]
+
+        [switch]
+        $Plex2FA,
 
     #  
     [Parameter(
@@ -452,7 +459,7 @@ Function Update-PlexMediaServer
             }elseif($PlexLogin -and $PlexPassword){#Plex.tv credentials specified via command-line
                 if($LogFile){Write-Log -Message "Credential Authentication enabled via command-line" -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Verifying Plex.tv Login..." -ForegroundColor Cyan -NoNewline}
-                if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
+                if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -Plex2FA:$Plex2FA -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
                     if($PlexUser.exception.Response){
                         if($LogFile){Write-Log -Message "Unable to retrieve Plex authentication Token. Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
                         if(-not $quiet){Write-Host "Plex Authentication Failed" -ForegroundColor Red}
@@ -471,7 +478,7 @@ Function Update-PlexMediaServer
             }elseif($Credential -ne [System.Management.Automation.PSCredential]::Empty){#Plex.tv credentials specified via command-line using PSCredential Object
                 if($LogFile){Write-Log -Message "PSCredential Authentication enabled via command-line" -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Verifying Plex.tv Credentials..." -ForegroundColor Cyan -NoNewline}
-                if((Get-PlexToken -Credential $Credential -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
+                if((Get-PlexToken -Credential $Credential -OutVariable PlexUser -Plex2FA:$Plex2FA -PassThru -ErrorAction SilentlyContinue).exception){
                     if($PlexUser.exception.Response){
                         if($LogFile){Write-Log -Message "Unable to retrieve Plex authentication Token. Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
                         if(-not $quiet){Write-Host "Plex Authentication Failed" -ForegroundColor Red}
@@ -495,7 +502,7 @@ Function Update-PlexMediaServer
                 if(!($Passive -or $Quiet)){#interactive
                     if($PlexLogin -or $PlexPassword){
                         if(-not $quiet){Write-Host "Verifying Plex.tv Credentials..." -ForegroundColor Cyan -NoNewline}
-                        if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
+                        if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -Plex2FA:$Plex2FA -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
                             if($PlexUser.exception.Response){
                                 if($LogFile){Write-Log -Message "Unable to retrieve Plex authentication Token. Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
                                 if(-not $quiet){Write-Host "Plex Authentication Failed" -ForegroundColor Red}
@@ -1341,7 +1348,7 @@ function Get-PlexToken{
 
     [hashtable]$return=@{}
 
-    if($Credential -ne [System.Management.Automation.PSCredential]::Empty) {
+    while($Credential -ne [System.Management.Automation.PSCredential]::Empty){
         $PlexLogin=$Credential.GetNetworkCredential().UserName
         $PlexPassword=$Credential.GetNetworkCredential().Password
     }
