@@ -211,6 +211,12 @@ Function Update-PlexMediaServer
 
         [switch]
         $ReportOnly,
+    # Report update Only
+    [Parameter(
+        HelpMessage="Exits with ExitCode '10' if update was insatalled successfully")]
+
+        [switch]
+        $NotifySucces,
     # Plex Server Build Build 
     [Parameter(
         HelpMessage="Forces Plex Media Server Build Architecture. If ommitted, Build Archtecture is that of OS architecture detected.")]
@@ -443,15 +449,10 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Verifying Authentication Token..." -ForegroundColor Cyan -NoNewline}
                 if((Get-RestMethod -Uri "https://plex.tv/api/resources?X-Plex-Token=$PlexToken" -OutVariable response -PassThru -ErrorAction SilentlyContinue).exception){
                     if($response.exception.Response){
-                        if($LogFile){Write-Log -Message "Plex authentication token was not validated. Please verify or use Get-PlexToken to retrieve again. Server Response: $($response.exception.message)" -Path $LogFile -Level Error}
-                        if(-not $quiet){Write-Host "Token Authentication Failed" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Please verify specified Plex Autentication Token or use Get-PlexToken to retrieve one." -ForegroundColor Cyan}
+                        throw "Plex authentication token was not validated. Please verify or use Get-PlexToken to retrieve again. Server Response: $($response.exception.message)"
                     }else{
-                        if($LogFile){Write-Log -Message "Unable to verify Plex authentication token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)" -Path $LogFile -Level Error}
-                        if(-not $quiet){Write-Host "Unable to validate Token" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Cannot communicate with Plex.tv servers or they are unresponsive. Please check network connectivity and https://status.plex.tv/." -ForegroundColor Cyan}
+                        throw "Unable to verify Plex authentication token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)"
                     }
-                    throw "Unable to verify Plex Login Token"
                 }else{
                     if($LogFile){Write-Log -Message "Plex Authentication Token $PlexToken specified at command-line Validated" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "Token Validated" -ForegroundColor Cyan}
@@ -461,15 +462,10 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Verifying Plex.tv Login..." -ForegroundColor Cyan -NoNewline}
                 if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -Plex2FA:$Plex2FA -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
                     if($PlexUser.exception.Response){
-                        if($LogFile){Write-Log -Message "Unable to retrieve Plex authentication Token. Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
-                        if(-not $quiet){Write-Host "Plex Authentication Failed" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Username and/or password are incorrect. Unable to retrieve Plex Authentication Token." -ForegroundColor Cyan}
+                        throw "Unable to retrieve Plex authentication Token. Plex.tv Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)"
                     }else{
-                        if($LogFile){Write-Log -Message "Cannot verify Plex login credentials. Unable to reach Plex.tv servers or they are not responding. Message: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
-                        if(-not $quiet){Write-Host "Unable to validate Token" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Cannot communicate with Plex.tv servers or they are not responding. Please check network connectivity and https://status.plex.tv/." -ForegroundColor Cyan}
+                        throw "Unable to retrieve Plex authentication Token. Unable to reach Plex.tv servers or they are not responding. Message: $($PlexUser.exception.message)"
                     }
-                    throw "Unable to verify Plex Login Token"
                 }else{
                     $PlexToken=$PlexUser.user.authToken
                     if($LogFile){Write-Log -Message "Plex authentication Token $($PlexUser.user.authToken) found for Plex user $($PlexUser.user.username)" -Path $LogFile -Level Info}
@@ -480,15 +476,10 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "Verifying Plex.tv Credentials..." -ForegroundColor Cyan -NoNewline}
                 if((Get-PlexToken -Credential $Credential -OutVariable PlexUser -Plex2FA:$Plex2FA -PassThru -ErrorAction SilentlyContinue).exception){
                     if($PlexUser.exception.Response){
-                        if($LogFile){Write-Log -Message "Unable to retrieve Plex authentication Token. Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
-                        if(-not $quiet){Write-Host "Plex Authentication Failed" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Username and/or password are incorrect. Unable to retrieve Plex Authentication Token." -ForegroundColor Cyan}
+                        throw "Unable to retrieve Plex authentication Token. Plex.tv Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)"
                     }else{
-                        if($LogFile){Write-Log -Message "Cannot verify Plex login credentials. Unable to reach Plex.tv servers or they are not responding. Message: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
-                        if(-not $quiet){Write-Host "Unable to validate Token" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Cannot communicate with Plex.tv servers or they are not responding. Please check network connectivity and https://status.plex.tv/." -ForegroundColor Cyan}
+                        throw "Unable to retrieve Plex authentication Token. Unable to reach Plex.tv servers or they are not responding. Message: $($PlexUser.exception.message)"
                     }
-                    throw "Unable to verify Credentials for Plex.tv Login"
                 }else{
                     $PlexToken=$PlexUser.user.authToken
                     if($LogFile){Write-Log -Message "Plex authentication Token $($PlexUser.user.authToken) found for Plex user $($PlexUser.user.username)" -Path $LogFile -Level Info}
@@ -504,15 +495,10 @@ Function Update-PlexMediaServer
                         if(-not $quiet){Write-Host "Verifying Plex.tv Credentials..." -ForegroundColor Cyan -NoNewline}
                         if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -Plex2FA:$Plex2FA -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
                             if($PlexUser.exception.Response){
-                                if($LogFile){Write-Log -Message "Unable to retrieve Plex authentication Token. Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
-                                if(-not $quiet){Write-Host "Plex Authentication Failed" -ForegroundColor Red}
-                                if(-not $quiet){Write-Host "Username and/or password are incorrect. Unable to retrieve Plex Authentication Token." -ForegroundColor Cyan}
+                                throw "Unable to retrieve Plex authentication Token. Plex.tv Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)"
                             }else{
-                                if($LogFile){Write-Log -Message "Cannot verify Plex login credentials. Unable to reach Plex.tv servers or they are not responding. Message: $($PlexUser.exception.message)" -Path $LogFile -Level Error}
-                                if(-not $quiet){Write-Host "Unable to validate Token" -ForegroundColor Red}
-                                if(-not $quiet){Write-Host "Cannot communicate with Plex.tv servers or they are not responding. Please check network connectivity and https://status.plex.tv/." -ForegroundColor Cyan}
+                                throw "Unable to retrieve Plex authentication Token. Unable to reach Plex.tv servers or they are not responding. Message: $($PlexUser.exception.message)"
                             }
-                            throw "Unable to verify Plex.tv Credentials"
                         }else{
                             $PlexToken=$PlexUser.user.authToken
                             if($LogFile){Write-Log -Message "Plex authentication Token $($PlexUser.user.authToken) found for Plex user $($PlexUser.user.username)" -Path $LogFile -Level Info}
@@ -535,11 +521,14 @@ Function Update-PlexMediaServer
             }
 
             #Begin Prcess Arguments
+            if($Plex2FA){
+                if($LogFile){Write-Log -Message "Two-Factor Authentication enabled via command-line (-Plex2FA)" -Path $LogFile -Level Info}
+            }
             if($Force){
                 if($LogFile){Write-Log -Message "Force Update enabled via command-line (-Force)" -Path $LogFile -Level Info}
             }
             if($ReportOnly){
-                if($LogFile){Write-Log -Message "Report Only enabled via command-line (-Force)" -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "Report Only enabled via command-line (-ReportOnly)" -Path $LogFile -Level Info}
             }
             if($EmailNotify){
                 if($LogFile){Write-Log -Message "Email Notification enabled via command-line (-EmailNotify)" -Path $LogFile -Level Info}
@@ -613,15 +602,10 @@ Function Update-PlexMediaServer
             if($UseServerToken){
                 if((Get-RestMethod -Uri "https://plex.tv/api/resources?X-Plex-Token=$PlexOnlineToken" -OutVariable response -PassThru -ErrorAction SilentlyContinue).exception){
                     if($response.exception.Response){
-                        if($LogFile){Write-Log -Message "Plex Server Online Authentication Token was not validated. Please verify Plex Server is logged in and clamed. Server Response: $($response.exception.message)" -Path $LogFile -Level Error}
-                        if(-not $quiet){Write-Host "Server Online Token Authentication Failed" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Please verify Plex Server is logged in and claimed." -ForegroundColor Cyan}
+                        throw "Plex Server Online Authentication Token was not validated. Please verify Plex Server is logged in and clamed. Server Response: $($response.exception.message)"
                     }else{
-                        if($LogFile){Write-Log -Message "Unable to verify Plex Server Online Authentication Token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)" -Path $LogFile -Level Error}
-                        if(-not $quiet){Write-Host "Unable to validate Server Online Token" -ForegroundColor Red}
-                        if(-not $quiet){Write-Host "Cannot communicate with Plex.tv servers or they are unresponsive. Please check network connectivity and https://status.plex.tv/." -ForegroundColor Cyan}
+                        throw "Unable to verify Plex Server Online Authentication Token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)"
                     }
-                    throw "Unable to verify Plex Server Online Authentication Token."
                 }else{
                     if($LogFile){Write-Log -Message "Plex Server Online Authentication Token $PlexOnlineToken Validated" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "Server Token Validated" -ForegroundColor Cyan}
@@ -652,8 +636,6 @@ Function Update-PlexMediaServer
             try{
                 $UserSID = (New-Object System.Security.Principal.NTAccount("$env:DomainName", "$UserName")).Translate([System.Security.Principal.SecurityIdentifier]).Value
             }catch{
-                if($LogFile){Write-Log -Message "Unable to translate User SID, $env:DomainName\$UserName may not exist." -Path $LogFile -Level Error}
-                if(-not $quiet){Write-Host "Unable to translate User SID, $env:DomainName\$UserName may not exist." -ForegroundColor Red}
                 throw "Unable to translate User SID, $env:DomainName\$UserName may not exist."
             }
             if($LogFile){Write-Log -Message "$UserName SID: $UserSID" -Path $LogFile -Level Info}
@@ -666,9 +648,7 @@ Function Update-PlexMediaServer
 
             #Sanity Check
             if(-not $PMSSettings -and -not $PMSProcess -and -not $PMSExeFile){
-                if($LogFile){Write-Log -Message "Exiting: Plex Media Server does not appear to be running or installed." -Path $LogFile -Level Error}
-                if(-not $quiet){Write-Host "Exiting: Plex Media Server does not appear to be installed." -ForegroundColor Red}
-                throw "Plex Media Server does not appear to be running or installed."
+                throw "Plex Media Server does not appera to be running or installed."
             }
 
             if(-not $quiet){Write-Host "`t Version: $installedVersion" -ForegroundColor Cyan}
@@ -721,7 +701,6 @@ Function Update-PlexMediaServer
                         if(-not $quiet){Write-Host "Unknown Response. Message: $($PlexWeb.exception.Response.StatusDescription) (Error: $($PlexWeb.exception.Response.StatusCode.value__)" -ForegroundColor Red}
                     }
                 }
-                if(-not $quiet){Write-Host "Error Connecting" -ForegroundColor Red}
             }else{
                 if(-not $quiet){Write-Host "Available" -ForegroundColor Cyan}
                 if($PlexWeb[0].MediaContainer){
@@ -817,9 +796,7 @@ Function Update-PlexMediaServer
             $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
             $headers.Add("X-Plex-Token", $PlexToken)
             if((Get-RestMethod -Uri $UrlDownload -Headers $headers -PassThru -OutVariable release).exception){
-                if($LogFile){Write-Log -Message "Exiting: Unable to determin available version, version info missing in link. $($release.exception.message) Error: ($($release.exception.Response.StatusCode.value__))" -Path $LogFile -Level Error}
-                Write-Warning "Version info missing in link. Please try https://plex.tv and confirm it works there before reporting this issue."
-                throw "Unable to determine available version, version info from $UrlDownload"
+                throw "Unable to determin available version, version info missing in link. $($release.exception.message) Error: ($($release.exception.Response.StatusCode.value__))"
             }else{
                 $releaseVersion,$releaseBuild = $release[0].computer.Windows.version.Split('-')
                 $releaseUrl = ($release[0].computer.Windows.releases | Where-Object { $_.build -eq $Build }).url
@@ -833,6 +810,7 @@ Function Update-PlexMediaServer
                 $UpdateRequired=$true
                 if($LogFile){Write-Log -Message "New version available. Available Update version ($releaseVersion) greater than installed version ($installedVersion)." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Update Available!!!" -ForegroundColor Green}
+                if($ReportOnly){exit 7}
                 $ArgumentList = "/install" 
             }elseif([version]$releaseVersion -lt [version]$installedVersion){
                 if($LogFile){Write-Log -Message "Available Update version ($releaseVersion) less than installed version ($installedVersion)." -Path $LogFile -Level Info}
@@ -842,7 +820,7 @@ Function Update-PlexMediaServer
                     if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
                 }else{
                     if(-not $quiet){Write-Host "Available Update version ($releaseVersion) less than installed version ($installedVersion). Use -force to force installation." -ForegroundColor Cyan}
-                    return
+                    exit 0
                 }
             }else{
                 if($LogFile){Write-Log -Message "Version up-to-date. Available Update version ($releaseVersion) equal to installed version ($installedVersion)." -Path $LogFile -Level Info}
@@ -852,15 +830,13 @@ Function Update-PlexMediaServer
                     if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
                 }else{
                     if(-not $quiet){Write-Host "Latest Version $installedVersion already installed. Use -force to force installation." -ForegroundColor Cyan}
-                    return
+                    exit 0
                 }
             }
 
             if(-not $quiet){Write-Host "`t PlexPass(Beta): $PlexPassStatus" -ForegroundColor Cyan}
             if(-not $quiet){Write-Host "`t Update Version: $releaseVersion" -ForegroundColor Cyan}
             if(-not $quiet){Write-Host "`t Update Build: $releaseBuild" -ForegroundColor Cyan}
-
-            if($ReportOnly){return}
 
             ### Begin Update ###
 
@@ -896,10 +872,8 @@ Function Update-PlexMediaServer
                     if(-not $quiet){Write-Host "Completed" -ForegroundColor Cyan}
                     Write-Verbose "WebRequest result $([int]$response.StatusCode)"
                 }else{
-                    if($LogFile){Write-Log -Message "Exiting: Error downloading $releaseUrl. StatusDescription: $response.StatusDescription StatusCode: $response.StatusCode" -Path $LogFile -Level Error}
-                    if(-not $quiet){Write-Host "ERROR OCCURRED!!!" -ForegroundColor Red}
-                    Write-Error "Error occured downloading Update. Status Description $([string]$response.StatusDescription) Statuscode: $([int]$response.StatusCode)"
-                    throw "Error downloading Update"
+                    if($LogFile){Write-Log -Message "Exiting: Error downloading $releaseUrl. StatusDescription: $($response.StatusDescription) StatusCode: $($response.StatusCode)" -Path $LogFile -Level Error}
+                    exit 4
                 }
             }
 
@@ -935,7 +909,7 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "`t Current Sessions: $([int]$PmsSessions[0].MediaContainer.size)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Current Live TV/DVR Sessions: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "Server $($PlexWeb[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -ForegroundColor Cyan}
-                return
+                exit 6
             }
 
             #Stop Plex Media Server Service Wrapper (PlexService)
@@ -1014,7 +988,6 @@ Function Update-PlexMediaServer
                         $ArgumentList = "/NORESTART /RESTARTEXITCODE=3010"
                     }
                 }
-                Default {if($LogFile){Write-Log -Message "Unnkown Build Value" -Path $LogFile -Level Info}}
             }
 
             if($CurrentBuild -eq 'windows-x86_64' -and $build -eq 'windows-x86'){
@@ -1074,20 +1047,25 @@ Function Update-PlexMediaServer
             }
             
             if($Process.ExitCode -eq 0){
+                [bool]$UpdateSuccess=$true
                 if(-not $quiet){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Restart Required: False" -ForegroundColor Cyan}
                 if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 3010 ){
+                [bool]$UpdateSuccess=$true
                 if(-not $quiet){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
                 if(-not $quiet){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
                 if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Warn}
             }elseif($Process.ExitCode -eq 2 ){
+                [bool]$UpdateSuccess=$false
                 if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
             }elseif($Process.ExitCode -eq 1602 ){
+                [bool]$UpdateSuccess=$false
                 if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
             }else{
+                [bool]$UpdateSuccess=$false
                 if($LogFile){Write-Log -Message "Update failed to install. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Error}
             }
 
@@ -1188,7 +1166,6 @@ Function Update-PlexMediaServer
                         if(-not $quiet){Write-Host "Unknown Response. Message: $($PlexWeb.exception.Response.StatusDescription) (Error: $($PlexWeb.exception.Response.StatusCode.value__)" -ForegroundColor Red}
                     }
                 }
-                if(-not $quiet){Write-Host "Error Connecting" -ForegroundColor Red}
             }elseif($PlexWeb[0].MediaContainer){
                 if(-not $quiet){Write-Host "Available" -ForegroundColor Cyan}
                 if($PlexWeb[0].MediaContainer){
@@ -1266,16 +1243,15 @@ Function Update-PlexMediaServer
             }
         }Catch{
             if($LogFile){Write-Log -Message "Error occurred: $($_.Exception.Message)" -Path $LogFile -Level Error}
-            if(-not $quiet){Write-Host "Error occurred: $($_.Exception.Message)" -ForegroundColor Red}
             if ($Host.Name -eq 'Windows PowerShell ISE Host') {
                 throw $_
             } else {
-                return $_
+                exit 1
             }
+        }finally{
+            if($LogFile){Write-Log -Message "Update-PlexMediaServer Completed" -Path $LogFile -Level Info}
         }
-    }
-    end{
-        if($LogFile){Write-Log -Message "Update-PlexMediaServer Completed" -Path $LogFile -Level Info}
+        if($NotifySucces -and $UpdateSuccess){exit 10}else{exit 0}
     }
 }
 
