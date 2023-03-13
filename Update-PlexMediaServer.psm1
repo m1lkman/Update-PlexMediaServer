@@ -725,6 +725,8 @@ Function Update-PlexMediaServer
             }else{
                 if(-not $quiet){Write-Host "Available" -ForegroundColor Cyan}
                 if($PlexWeb[0].MediaContainer){
+                    if($PlexWeb[0].MediaContainer.version){$installedVersion,$installedBuild = $PlexWeb[0].MediaContainer.version.Split('-')}
+                    if($LogFile){Write-Log -Message "Plex Web version $installedVersion" -Path $LogFile -Level Info}
                     if(-not $quiet){Write-Host "`t Version: $($PlexWeb[0].MediaContainer.version)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t Friendly Name: $($PlexWeb[0].MediaContainer.friendlyName)" -ForegroundColor Cyan}
                     if(-not $quiet){Write-Host "`t PlexUsername: $($PlexWeb[0].MediaContainer.myPlexUserName)" -ForegroundColor Cyan}
