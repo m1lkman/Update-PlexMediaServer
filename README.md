@@ -127,16 +127,20 @@ Add arguments
 -Command "{& Update-PlexMediaServer -Quiet -EmailNotify -IncludeLog -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL -UpdateCleanup 2}
 ```
 
-### Find Your Plex Authentication Token (Get-PlexToken)
+### Generate New Plex Authentication Token (Get-PlexToken)
 Get Plex Authentication token so you don't have to save your credentials in your scripts or scheduled tasks (will prompt if either value is missing when running interactively):
 
-Note: [Plex Two Factor Authentication](https://support.plex.tv/articles/two-factor-authentication/) must be disabled (i.e. temporarily) 
+Generate Plex Token with Plex.tv Email or ID and passord
 ```
-Get-PlexToken -PlexLogin <Email/ID> -Password <Password>
+Get-PlexToken -PlexLogin <Email/ID> -PlexPassword <Password>
+```
+Generate Plex Token with Plex.tv Email or ID, password, and prompt for Plex Two-Factor auth code (if 2FA is enabled for your Plex.tv account)
+```
+Get-PlexToken -PlexLogin <Email/ID> -PlexPassword <Password> -Plex2FA
 ```
 Get-PlexToken Syntax
 ```
-Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-Credential <pscredential>]  [<CommonParameters>]
+Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-Plex2FA] [-PassThru] [-Credential <pscredential>] [<CommonParameters>]
 ```
 ### Q&A
 
@@ -154,8 +158,9 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-PassThru] [-C
 * A: That is entirely up to you! Create some issues or fork and fix/add what you need.
 
 ## Version Information
-```v2.0.6 2023.3.11 (Updates by m1lkman)```
-  * Improved error handling
+```v2.0.7 2023.3.13 (Updates by m1lkman)```
+  * Updated Get-PlexToken function to support current Plex OAuth API including Two-Factor Authentication support
+  * More consistant and improved error handling and 
 
 ```v2.0.6 2023.3.11 (Updates by m1lkman)```
   * Fixed Token Regex verification (added - and _)
