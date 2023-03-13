@@ -1038,20 +1038,11 @@ Function Update-PlexMediaServer
                     if(-not $quiet){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
                     if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Warn}
                 }elseif($Process.ExitCode -eq 1602 ){
-                    if(-not $quiet){Write-Host "Cancelled" -ForegroundColor red}
-                    if(-not $quiet){Write-Host "`t Uninstall was cancelled by user. ExitCode: $($Process.ExitCode)" -ForegroundColor Red}
-                    if(-not $quiet){Write-Host "`t Plex Media Server was not uninstalled." -ForegroundColor Red}
-                    if($LogFile){Write-Log -Message "Uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
+                    if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
                 }elseif($Process.ExitCode -eq 2 ){
-                    if(-not $quiet){Write-Host "Cancelled" -ForegroundColor red}
-                    if(-not $quiet){Write-Host "`t Uninstall was cancelled by user. ExitCode: $($Process.ExitCode)" -ForegroundColor Red}
-                    if(-not $quiet){Write-Host "`t Plex Media Server was not uninstalled." -ForegroundColor Red}
-                    if($LogFile){Write-Log -Message "Uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
+                    if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
                 }else{
-                    if(-not $quiet){Write-Host "ERROR!!!" -ForegroundColor Red}
-                    if(-not $quiet){Write-Host "`t An Error occurred uninstalling Plex Media Server. Exit Code: $($Process.ExitCode)" -ForegroundColor Red}
-                    if(-not $quiet){Write-Host "`t Plex Media Server was not uninstalled." -ForegroundColor Red}
-                    if($LogFile){Write-Log -Message "Failed to uninstall update. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Error}
+                    if($LogFile){Write-Log -Message "Plex Media Server failed to uninstall. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Error}
                 }
             }
 
@@ -1074,7 +1065,7 @@ Function Update-PlexMediaServer
                         if($LogFile){Write-Log -Message "InstallFolder: $InstallFolder" -Path $LogFile -Level Info}
                         break
                     }else{
-                        if($LogFile){Write-Log -Message "Plex Settings not found in key $($Key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::',''))" -Path $LogFile -Level Warn}
+                        if($LogFile){Write-Log -Message "Plex Settings not found in key $($Key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::',''))" -Path $LogFile -Level Info}
                     }
                 }
             }else{
@@ -1092,20 +1083,11 @@ Function Update-PlexMediaServer
                 if(-not $quiet){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
                 if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Warn}
             }elseif($Process.ExitCode -eq 2 ){
-                if(-not $quiet){Write-Host "Cancelled" -ForegroundColor red}
-                if(-not $quiet){Write-Host "`t Update was cancelled by user. ExitCode: $($Process.ExitCode)" -ForegroundColor Red}
-                if(-not $quiet){Write-Host "`t Plex Media Server was not updated." -ForegroundColor Red}
                 if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
             }elseif($Process.ExitCode -eq 1602 ){
-                if(-not $quiet){Write-Host "Cancelled" -ForegroundColor red}
-                if(-not $quiet){Write-Host "`t Update was cancelled by user. ExitCode: $($Process.ExitCode)" -ForegroundColor Red}
-                if(-not $quiet){Write-Host "`t Plex Media Server was not updated." -ForegroundColor Red}
                 if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
             }else{
-                if(-not $quiet){Write-Host "ERROR!!!" -ForegroundColor Red}
-                if(-not $quiet){Write-Host "`t An Error occurred installing update. Exit Code: $($Process.ExitCode)" -ForegroundColor Red}
-                if(-not $quiet){Write-Host "`t Plex Media Server was not update." -ForegroundColor Red}
-                if($LogFile){Write-Log -Message "Failed to install update. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Error}
+                if($LogFile){Write-Log -Message "Update failed to install. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Error}
             }
 
             #cleanup Run keys after install
