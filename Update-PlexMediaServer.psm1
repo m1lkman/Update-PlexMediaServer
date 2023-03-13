@@ -554,7 +554,7 @@ Function Update-PlexMediaServer
                 if($LogFile){Write-Log -Message "Email HTML Format for Notification enabled via command-line (-EmailIsBodyHtml)" -Path $LogFile -Level Info}
             }
             if($DisablePlexPass){
-                if($LogFile){Write-Log -Message "PlexPass(Beta) Updates disabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
+                if($LogFile){Write-Log -Message "PlexPass(Beta) Update Channel disabled via command-line (-DisablePlexPass)" -Path $LogFile -Level Info}
             }
             if($UpdatesCleanup){
                 if($LogFile){Write-Log -Message "Update Cleanup enabled via command-line (-UpdateCleanup)" -Path $LogFile -Level Info}
@@ -829,8 +829,23 @@ Function Update-PlexMediaServer
 
             #Determine if installed PMS version needs update
             $UpdateRequired=$false
-            if([Version]$installedVersion -eq [Version]$releaseVersion){
-                if($LogFile){Write-Log -Message "Version up-to-date. Installed version ($installedVersion) equal to available version ($releaseVersion)." -Path $LogFile -Level Info}
+            if([version]$releaseVersion -gt [version]$installedVersion){
+                $UpdateRequired=$true
+                if($LogFile){Write-Log -Message "New version available. Available Update version ($releaseVersion) greater than installed version ($installedVersion)." -Path $LogFile -Level Info}
+                if(-not $quiet){Write-Host "Update Available!!!" -ForegroundColor Green}
+                $ArgumentList = "/install" 
+            }elseif([version]$releaseVersion -lt [version]$installedVersion){
+                if($LogFile){Write-Log -Message "Available Update version ($releaseVersion) greater than installed version ($installedVersion)." -Path $LogFile -Level Info}
+                if($force){
+                    $UpdateRequired=$true
+                    $ArgumentList = "/install"
+                    if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
+                }else{
+                    if(-not $quiet){Write-Host "Available Update version ($releaseVersion) greater than installed version ($installedVersion). Use -force to force installation." -ForegroundColor Cyan}
+                    return
+                }
+            }else{
+                if($LogFile){Write-Log -Message "Version up-to-date. Available Update version ($releaseVersion) equal to installed version ($installedVersion)." -Path $LogFile -Level Info}
                 if(-not $quiet){Write-Host "Running the latest version $installedVersion." -ForegroundColor Cyan}
                 if($force){
                     $UpdateRequired=$true
@@ -840,22 +855,8 @@ Function Update-PlexMediaServer
                     if(-not $quiet){Write-Host "Latest Version $installedVersion already installed. Use -force to force installation." -ForegroundColor Cyan}
                     return
                 }
-            }elseif([version]$installedVersion -lt [version]$releaseVersion){
-                $UpdateRequired=$true
-                if($LogFile){Write-Log -Message "New version available. Installed version ($installedVersion) less than available version ($releaseVersion)." -Path $LogFile -Level Info}
-                if(-not $quiet){Write-Host "Update Available!!!" -ForegroundColor Green}
-                $ArgumentList = "/install" 
-            }else{
-                if($LogFile){Write-Log -Message "Installed version ($installedVersion) greater than available version ($releaseVersion)." -Path $LogFile -Level Info}
-                if($force){
-                    $UpdateRequired=$true
-                    $ArgumentList = "/install"
-                    if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
-                }else{
-                    if(-not $quiet){Write-Host "Installed version ($installedVersion) greater than available version ($releaseVersion). Use -force to force installation." -ForegroundColor Cyan}
-                    return
-                }
             }
+
             if(-not $quiet){Write-Host "`t PlexPass(Beta): $PlexPassStatus" -ForegroundColor Cyan}
             if(-not $quiet){Write-Host "`t Update Version: $releaseVersion" -ForegroundColor Cyan}
             if(-not $quiet){Write-Host "`t Update Build: $releaseBuild" -ForegroundColor Cyan}
