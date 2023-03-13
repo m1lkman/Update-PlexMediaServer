@@ -1303,7 +1303,6 @@ function Get-PlexToken{
     [Parameter(
         Position=0,
         ValueFromPipelineByPropertyName=$true)]
-        [ValidateNotNullOrEmpty()]
 
         [string]$PlexLogin,
 
@@ -1311,7 +1310,6 @@ function Get-PlexToken{
     [Parameter(
         Position=1,
         ValueFromPipelineByPropertyName=$true)]
-        [ValidateNotNullOrEmpty()]
 
         [string]$PlexPassword,
 
@@ -1346,26 +1344,28 @@ function Get-PlexToken{
         $PlexPassword=$Credential.GetNetworkCredential().Password
     }
 
-    if([string]::IsNullOrEmpty($PlexLogin)){
+    while([string]::IsNullOrEmpty($PlexLogin)){
         $PlexLogin=Read-Host -Prompt "Enter Plex.tv Email or ID"
     }
 
-    if([string]::IsNullOrEmpty($PlexPassword)){
+    while([string]::IsNullOrEmpty($PlexPassword)){
         $PlexPassword=Read-Host -Prompt "Enter Plex.tv password"
     }
 
+    $URL_LOGIN='https://plex.tv/users/sign_in.json'
+
     try {
-		$response = Invoke-RestMethod -Uri "https://plex.tv/users/sign_in.json" -Method POST -Headers @{
-			'Authorization'            = ("Basic {0}" -f ([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $PlexLogin, $PlexPassword)))));
-			'X-Plex-Client-Identifier' = "PowerShell";
-			'X-Plex-Product'           = 'Get-PlexToken';
-			'X-Plex-Version'           = "2.0.0";
-			'X-Plex-Username'          = $PlexLogin;
+		$response = Invoke-RestMethod -Uri $URL_LOGIN -Method POST -Headers @{
+            'Authorization'            = ("Basic {0}" -f ([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $PlexLogin, $PlexPassword)))));
+            'X-Plex-Client-Identifier' = "PowerShell";
+            'X-Plex-Product'           = 'Get-PlexToken';
+            'X-Plex-Version'           = "2.0.0";
+            'X-Plex-Username'          = $PlexLogin;
 		} -ErrorAction Stop
 
         Write-Verbose "Plex Authentication Token $($response.user.authToken) found for $($response.user.username)"
         $return.user=$response.user
-        $return.status=0
+        $return.Status=0
         if($PassThru){return $return}else{return $response.user.authToken}
         
     } catch {
