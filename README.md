@@ -32,23 +32,23 @@ Get-Help Update-PlexMediaServer
 ```
 Syntax
 ```
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-LogFile <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [[-UseServerToken]] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
+Update-PlexMediaServer [[-UseServerToken]] [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-Passive] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-EmailIsBodyHtml] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
+Update-PlexMediaServer [-EmailNotify] [[-PlexPassword] <string>] -SmtpTo <string> -SmtpFrom <string> -SmtpUser <string> -SmtpPassword <string> -SmtpServer <string> [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-LogFile <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-SmtpPort <int>] [-EnableSSL] [-EmailIsBodyHtml] [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+Update-PlexMediaServer [-SlackNotify] -SlackChannel <string> -SlackToken <string> [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-LogFile <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [-SlackNotify] -SlackChannel <string> -SlackToken <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
+Update-PlexMediaServer [-PlexToken] <string> [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-LogFile <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [-PlexToken] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [[-Build] [-Hostname] [-ReportOnly]  [<CommonParameters>]
+Update-PlexMediaServer [-Credential] <pscredential> [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-LogFile <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [-Credential] <pscredential> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
+Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-LogFile <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-WhatIf] [-Confirm] [<CommonParameters>]
 
-Update-PlexMediaServer [-PlexLogin] <string> [[-PlexPassword] <string>] [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-LogFile <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
-
-Update-PlexMediaServer [-LogFile] <string> [-DisablePlexPass] [-PlexServerPort <int>] [-UserName <string>] [-Force] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-Build] [-Hostname] [-ReportOnly] [<CommonParameters>]
+Update-PlexMediaServer [-LogFile] <string> [-Plex2FA] [-DisablePlexPass] [-PlexServerPort <int>] [-PlexServerHostName <string>] [-UserName <string>] [-Force] [-ReportOnly] [-Build {windows-x86 | windows-x86_64}] [-UpdateCleanup <int>] [-Passive] [-Quiet] [-AttachLog] [-IncludeLog] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 ### Examples
 For local interactive default execution using Plex Server Online token (requires Plex Server is logged in and claimed) to authenticate to Plex.tv for updates (will honor Plex Server Update Channel Setting):
@@ -129,6 +129,13 @@ Add arguments
 
 ### Generate New Plex Authentication Token (Get-PlexToken)
 Get Plex Authentication token so you don't have to save your credentials in your scripts or scheduled tasks (will prompt if either value is missing when running interactively):
+
+Syntax
+```
+Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-Plex2FA] [-PassThru] [<CommonParameters>]
+    
+Get-PlexToken [[-Credential] <pscredential>] [-Plex2FA] [-PassThru] [<CommonParameters>]
+```
 
 Generate Plex Token with Plex.tv Email or ID and passord
 ```
