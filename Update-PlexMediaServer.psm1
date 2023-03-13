@@ -1309,6 +1309,11 @@ function Get-PlexToken{
     #
     [parameter()]
 
+        [Switch]$Plex2FA,
+
+    #
+    [parameter()]
+
         [Switch]$PassThru,
 
     #
@@ -1329,6 +1334,10 @@ function Get-PlexToken{
 
         [object]$Credential = [System.Management.Automation.PSCredential]::Empty 
     )
+    switch($PSCmdlet.ParameterSetName){
+        "PSCredential"{Write-Debug "ParameterSetName: $_"}
+        default{Write-Debug "ParameterSetName: $_"}
+    }
 
     [hashtable]$return=@{}
 
@@ -1343,6 +1352,14 @@ function Get-PlexToken{
 
     while([string]::IsNullOrEmpty($PlexPassword)){
         $PlexPassword=Read-Host -Prompt "Enter Plex.tv password"
+    }
+
+    if($Plex2FA){
+        do{
+            $AuthCode=Read-Host -Prompt "Enter Two-Factor auth code"
+            if($AuthCode -notmatch '[0-9]{6}'){Write-Host "Format incorrect"}
+        }until($AuthCode -match '[0-9]{6}')
+        $PlexPassword=$PlexPassword+$AuthCode
     }
 
     $URL_LOGIN='https://plex.tv/users/sign_in.json'
