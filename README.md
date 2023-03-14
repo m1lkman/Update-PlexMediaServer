@@ -103,6 +103,17 @@ Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@
 ```
 Update-PlexMediaPlayer -SlackNotify -SlackChannel '#ChannelName' -SlackToken <Slack OAuth Token>
 ```
+
+### Exit Codes
+Beyond the typical success and failure codes the following additional exit codes will output.
+
+  * 0 Success
+  * 1 on error (enable verbose output or check the log for more info)
+  * 4 if download fails
+  * 6 if update was deferred due to server having active sessions
+  * 7 if update is available (requires -ReportOnly parameter)
+  * 10 if new file was downloaded/installed (requires -NotifySuccess Paremeter)
+
 ### Scheduled Task Example (putting it all together)
 Here's the solution I use on my Plex server. I use Windows Task Scheduler to run every night at 2:00am to minimize impact to my family and friends. I use the default execution menthod leveraging my server's Online Authentication Token to install the latest beta channel (PlexPass) updates. I also enabled email notification with log included and update cleanup to remove all previous updates except the latest 2.
 
@@ -167,6 +178,9 @@ Get-PlexToken [[-PlexLogin] <string>] [[-PlexPassword] <string>] [-Plex2FA] [-Pa
 ## Version Information
 ```v2.0.7 2023.3.13 (Updates by m1lkman)```
   * Updated Get-PlexToken function to support current Plex OAuth API including Two-Factor Authentication support
+  * Incorporated support for `-Plex2FA` parameter for interactive execution
+  * Added Exit codes based on results of script (See Exit codes section)
+  * Added `-NotifySuccess` parameter to provide a specific exit code (10) on successfully installation of an update
   * More consistant and improved error handling and 
 
 ```v2.0.6 2023.3.11 (Updates by m1lkman)```
