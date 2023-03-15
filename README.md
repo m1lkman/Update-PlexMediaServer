@@ -37,6 +37,10 @@ Import-Module Update-PlexMediaServer
 
 Note: This module is not signed, you will need to set your PowerShell execution policy to bypass. (see [Set-ExecutionPolicy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.3))
 
+# Need more information?
+
+See https://github.com/m1lkman/Update-PlexMediaServer/wiki for more information
+
 ### Authors
 * **m1lkman** - [m1lkman](https://github.com/m1lkman)
 * **evansconforti** - *Initial work on Plex Forums* - [Plex Service Updater](https://forums.plex.tv/t/utility-plex-service-updater/88636)
