@@ -13,19 +13,29 @@ Windows PowerShell module for automating Plex Media Server updates when running 
   * 1.0.3 or later for PMS windows-x86 builds
   * 1.2.1 or later for PMS windows-x86_64 builds
   
-### Installation
-1. Save the module file (Update-PlexMediaServer.psm1) to a folder of the same name in one of your PowerShell module directories  (%ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer or %UserProfile%\Documents\WindowsPowerShell\Modules by default). See [Installing a Powershell Module](https://msdn.microsoft.com/en-us/library/dd878350).
-Or using git, execute the following commands:
+# Installation
+## Download Module
+
+### Option 1: Download the module manually. 
+
+Download and save the module file `Update-PlexMediaServer.psm1` to a folder of the same name in one of your PowerShell module directories. 
+* `%ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer`
+* `%UserProfile%\Documents\WindowsPowerShell\Modules\Update-PlexMediaServer`
+
+### Option 2: Use git
+Execute the following commands from an elevated (run as Administrator) command prompt or PowerShell:
 ```
 cd %ProgramFiles%\WindowsPowerShell\Modules\
-
 git clone https://github.com/m1lkman/Update-PlexMediaServer.git
 ```
-2. Import the module by launching PowerShell as an Administrator and running the following command:
+## Install Module
+### Import the module
+Execute the following command from an elevated (run as Administrator) Powershell. (More Info [Inport-Module](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/import-module)):
 ```
 Import-Module Update-PlexMediaServer
 ```
-(This module is not signed, so you need to change the PowerShell execution policy to unrestricted.)
+
+Note: This module is not signed, so you need to change the PowerShell execution policy to unrestricted.
 
 ### Authors
 * **m1lkman** - [m1lkman](https://github.com/m1lkman)
