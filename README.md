@@ -35,7 +35,7 @@ Execute the following command from an elevated (run as Administrator) Powershell
 Import-Module Update-PlexMediaServer
 ```
 
-Note: This module is not signed, you will need to set your PowerShell execution policy to bypass. (see [Set-ExecutionPolicy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.3)
+Note: This module is not signed, you will need to set your PowerShell execution policy to bypass. (see [Set-ExecutionPolicy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.3))
 
 ### Authors
 * **m1lkman** - [m1lkman](https://github.com/m1lkman)
