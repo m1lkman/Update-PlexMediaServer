@@ -13,29 +13,29 @@ Windows PowerShell module for automating Plex Media Server updates when running 
   * 1.0.3 or later for PMS windows-x86 builds
   * 1.2.1 or later for PMS windows-x86_64 builds
   
-# Installation
-## Download Module
+# Installing Update-PlexMediaServer
+## 1. Download Module
 
-### Option 1: Download the module manually. 
+### Option A: Download the module manually. 
 
 Download and save the module file `Update-PlexMediaServer.psm1` to a folder of the same name in one of your PowerShell module directories. 
 * `%ProgramFiles%\WindowsPowerShell\Modules\Update-PlexMediaServer`
 * `%UserProfile%\Documents\WindowsPowerShell\Modules\Update-PlexMediaServer`
 
-### Option 2: Use git
+### Option B: Use git
 Execute the following commands from an elevated (run as Administrator) command prompt or PowerShell:
 ```
 cd %ProgramFiles%\WindowsPowerShell\Modules\
 git clone https://github.com/m1lkman/Update-PlexMediaServer.git
 ```
-## Install Module
+## 2. Install Module
 ### Import the module
 Execute the following command from an elevated (run as Administrator) Powershell. (More Info [Inport-Module](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/import-module)):
 ```
 Import-Module Update-PlexMediaServer
 ```
 
-Note: This module is not signed, so you need to change the PowerShell execution policy to unrestricted.
+Note: This module is not signed, you will need to set your PowerShell execution policy to bypass. (see [Set-ExecutionPolicy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.3)
 
 ### Authors
 * **m1lkman** - [m1lkman](https://github.com/m1lkman)
