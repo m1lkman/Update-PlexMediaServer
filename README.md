@@ -39,7 +39,7 @@ Note: This module is not signed, you will need to set your PowerShell execution 
 
 # Need more information?
 
-See https://github.com/m1lkman/Update-PlexMediaServer/wiki for more information
+See [Wiki](https://github.com/m1lkman/Update-PlexMediaServer/wiki) for more information
 
 ### Authors
 * **m1lkman** - [m1lkman](https://github.com/m1lkman)
