@@ -1006,23 +1006,29 @@ Run Passive and update using Server Online Authentication Token.
                     }    
                 }
 
-                if($Process.ExitCode -eq 0){
-                    if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
-                    if(-not $Silent){Write-Host "`t Restart Required: False" -ForegroundColor Cyan}
-                    if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
-                }elseif($Process.ExitCode -eq 3010 ){
-                    if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
-                    if(-not $Silent){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
-                    if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
-                }elseif($Process.ExitCode -eq 1602 ){
-                    if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
-                    if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
-                }elseif($Process.ExitCode -eq 2 ){
-                    if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
-                    if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
-                }else{
-                    if(-not $Silent){Write-Host "Error" -ForegroundColor Red}
-                    if($LogFile){Write-Log -Message "Plex Media Server failed to uninstall. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}
+                switch ($Process.ExitCode) {
+                    0 {
+                        if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
+                        if(-not $Silent){Write-Host "`t Restart Required: False" -ForegroundColor Cyan}
+                        if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}    
+                    }
+                    2 {
+                        if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                        if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}    
+                    }
+                    1602 {
+                        if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                        if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}    
+                    }
+                    3010 {
+                        if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
+                        if(-not $Silent){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
+                        if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}    
+                    }
+                    Default {
+                        if(-not $Silent){Write-Host "Error" -ForegroundColor Red}
+                        if($LogFile){Write-Log -Message "Plex Media Server failed to uninstall. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}    
+                    }
                 }
             }
 
@@ -1052,30 +1058,36 @@ Run Passive and update using Server Online Authentication Token.
                 if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry" -Path $LogFile -Level Info}
             }
 
-            if($Process.ExitCode -eq 0){
-                [bool]$UpdateSuccess=$true
-                if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
-                if(-not $Silent){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
-                if(-not $Silent){Write-Host "`t Restart Required: False" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
-            }elseif($Process.ExitCode -eq 3010 ){
-                [bool]$UpdateSuccess=$true
-                if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
-                if(-not $Silent){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
-                if(-not $Silent){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
-            }elseif($Process.ExitCode -eq 2 ){
-                [bool]$UpdateSuccess=$false
-                if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
-                if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
-            }elseif($Process.ExitCode -eq 1602 ){
-                [bool]$UpdateSuccess=$false
-                if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
-                if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
-            }else{
-                [bool]$UpdateSuccess=$false
-                if(-not $Silent){Write-Host "Error" -ForegroundColor Red}
-                if($LogFile){Write-Log -Message "Update failed to install. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}
+            switch ($Process.ExitCode) {
+                0 {
+                    [bool]$UpdateSuccess=$true
+                    if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Restart Required: False" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}
+                }
+                2 {
+                    [bool]$UpdateSuccess=$false
+                    if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                    if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
+                }
+                1602 {
+                    [bool]$UpdateSuccess=$false
+                    if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                    if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
+                }
+                3010 {
+                    [bool]$UpdateSuccess=$true
+                    if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
+                }
+                Default {
+                    [bool]$UpdateSuccess=$false
+                    if(-not $Silent){Write-Host "Error" -ForegroundColor Red}
+                    if($LogFile){Write-Log -Message "Update failed to install. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}
+                }
             }
 
             #cleanup Run keys after install
