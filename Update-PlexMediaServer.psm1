@@ -43,7 +43,7 @@ Run Interactively and attempt to update from publicly available updates.
    Update-PlexMediaServer
 .EXAMPLE
 Force Upgrade/reinstall even if version is greater than or equal to
-   Update-PlexMediaServer -force
+   Update-PlexMediaServer -Force
 .EXAMPLE
 Run Interactively and specify a user other than the context the script is executing in.
    Update-PlexMediaServer -UserName JDoe
@@ -52,7 +52,7 @@ Run interactively and attempt to update from PlexPass(Beta) available updates. W
    Update-PlexMediaServer -PlexPass
 .EXAMPLE
 Run silently and attempt to update from PlexPass(Beta) available updates.
-    Update-PlexMediaServer -PlexToken <Token> -Quiet
+    Update-PlexMediaServer -PlexToken <Token> -Silent
 .EXAMPLE
 Run Passive and update using Server Online Authentication Token.
    Update-PlexMediaServer -PlexServerToken -Passive
@@ -61,7 +61,7 @@ Run Passive and update using Server Online Authentication Token.
 .EXAMPLE
    Update-PlexMediaServer -EmailNotify -SmtpTo Someone@gmail.com -SmtpFrom Someone@gmail.com -SmtpUser Username -SmtpPassword Password -SmtpServer smtp.server.com -SmtpPort Port -EnableSSL
 .EXAMPLE
-   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock {:Update-PlexMediaServer -UserName JDoe} 
+   Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock {Update-PlexMediaServer -UserName JDoe} 
 .EXAMPLE
    Invoke-Command -ComputerName Server1 -Credential Administrator -ScriptBlock {Update-PlexMediaServer -UserName JDoe} 
 .EXAMPLE
@@ -71,30 +71,19 @@ Run Passive and update using Server Online Authentication Token.
     https://github.com/m1lkman/Update-PlexMediaServer
 #>Function Update-PlexMediaServer
 {
-    [CmdletBinding(SupportsShouldProcess,DefaultParameterSetName="ServerAuth")]
+    [CmdletBinding(PositionalBinding=$False,SupportsShouldProcess,DefaultParameterSetName="ServerAuth")]
     param(
         # Plex Server Online Authentication Token
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="ServerAuth",
-            Position=0,
             HelpMessage="Enables Plex Server Authentication Token Discovery")]
-        [Parameter(ParameterSetName="Passive",
-            Position=0)]
-        [Parameter(ParameterSetName="Silent",
-            Position=0)]
-        [Parameter(ParameterSetName="Force",
-            Position=0)]
-        [Parameter(ParameterSetName="ReportOnly",
-            Position=0)]
-        [Parameter(ParameterSetName="NotifySuccess",
-            Position=0)]
-        [Parameter(ParameterSetName="EmailNotify",
-            Position=0)]
-        [Parameter(ParameterSetName="SlackNotify",
-            Position=0)]
+        [Parameter(ParameterSetName="Passive",Position=0)]
+        [Parameter(ParameterSetName="Silent",Position=0)]
+        
         [switch]$UseServerToken,
+
         # Plex User Authentication Token
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="TokenAuth",
             Position=0,
             ValueFromPipelineByPropertyName=$true,
@@ -106,25 +95,13 @@ Run Passive and update using Server Online Authentication Token.
                 throw "Please provide a Plex Authentication Token matching the format abcde12345abcde12345 (20 alpha-numeric characters)."
             }
         })]
-        [ValidateNotNull()]
-        [Parameter(Mandatory=$true,
-            ParameterSetName="Passive",
-            Position=0)]
-        [Parameter(ParameterSetName="Silent",
-            Position=0)]
-        [Parameter(ParameterSetName="Force",
-            Position=0)]
-        [Parameter(ParameterSetName="ReportOnly",
-            Position=0)]
-        [Parameter(ParameterSetName="NotifySuccess",
-            Position=0)]
-        [Parameter(ParameterSetName="EmailNotify",
-            Position=0)]
-        [Parameter(ParameterSetName="SlackNotify",
-            Position=0)]
+        [Parameter(ParameterSetName="Passive",Position=0)]
+        [Parameter(ParameterSetName="Silent",Position=0)]
+        
         [string]$PlexToken,
+
         # Plex.tv Credentials with PSCredential
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="CredAuth",
             Position=0,
             ValueFromPipelineByPropertyName=$true,
@@ -132,254 +109,303 @@ Run Passive and update using Server Online Authentication Token.
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]    
-        [Parameter(ParameterSetName="Passive",
-            Position=0)]
-        [Parameter(ParameterSetName="Silent",
-            Position=0)]
-        [Parameter(ParameterSetName="Force",
-            Position=0)]
-        [Parameter(ParameterSetName="ReportOnly",
-            Position=0)]
-        [Parameter(ParameterSetName="NotifySuccess",
-            Position=0)]
-        [Parameter(ParameterSetName="EmailNotify",
-            Position=0)]
-        [Parameter(ParameterSetName="SlackNotify",
-            Position=0)]
+        [Parameter(ParameterSetName="Passive",Position=0)]
+        [Parameter(ParameterSetName="Silent",Position=0)]
+    
         [object]$Credential=[System.Management.Automation.PSCredential]::Empty,
+
         # 
-        [Alias("PlexID")]
-        [Parameter(Mandatory=$true,
-            ParameterSetName="TextAuth",
-            Position=0,
-            ValueFromPipelineByPropertyName=$true,
-            HelpMessage="Enter Plex.tv Email or ID")]                     
+        [Alias("PlexUserName")]
+        [Parameter(Mandatory,ParameterSetName="TextAuth",Position=0,ValueFromPipelineByPropertyName=$true,HelpMessage="Plex.tv Email or UserName")]                     
+        [Parameter(ParameterSetName="Passive",Position=0)]
+        [Parameter(ParameterSetName="Silent",Position=0)]
+
         [string]$PlexLogin,
+
         # 
         [Parameter(ParameterSetName="TextAuth",
             Position=1,
             ValueFromPipelineByPropertyName=$true,
-            HelpMessage="Enter Plex.tv Password")]
-        [Parameter(ParameterSetName="Passive",
-            Position=1)]
-        [Parameter(ParameterSetName="Silent",
-            Position=1)]
-        [Parameter(ParameterSetName="Force",
-            Position=1)]
-        [Parameter(ParameterSetName="ReportOnly",
-            Position=1)]
-        [Parameter(ParameterSetName="NotifySuccess",
-            Position=1)]
-        [Parameter(ParameterSetName="EmailNotify",
-            Position=1)]
-        [Parameter(ParameterSetName="SlackNotify",
-            Position=1)]
+            HelpMessage="Plex.tv Password")]
+        [Parameter(ParameterSetName="Passive",Position=1)]
+        [Parameter(ParameterSetName="Silent",Position=1)]
+    
         [string]$PlexPassword,
+
+        # passive - minimal UI no prompts
+        [Parameter(Mandatory,ParameterSetName="Passive",HelpMessage="Displays minimal UI with no prompts")]
+        
+        [switch]$Passive,
+
+        # quiet - no UI no prompts
+        [Parameter(Mandatory,ParameterSetName="Silent",HelpMessage="Display no UI and no prompts")]
+                
+        [switch]$Silent,
+
         #  
-        [Parameter(ParameterSetName="2FA",
-            HelpMessage="Enables Plex Two-Factor auth code support")]
+        [Parameter(HelpMessage="Enables Plex Two-Factor auth code support")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [switch]$Plex2FA,
+
         #  
         [Parameter(HelpMessage="Disables PlexPass(Beta) Updates")]
+        
         [switch]$DisablePlexPass,
-        #
-        [Parameter(ValueFromPipelineByPropertyName=$true,
-            HelpMessage="Enter non-standard Plex Media Server Port, default is 32400")]
-        [int32]$PlexServerPort=32400,
+
         #
         [Parameter(ValueFromPipelineByPropertyName=$true,
             HelpMessage="Specifiy Plex Media Server Hostname for Plex Web Checks. Bypasses detecting hostname using public IP reverse dns lookup.")]
+        
         [String]$PlexServerHostName,
+
+        #
+        [Parameter(ValueFromPipelineByPropertyName=$true,
+            HelpMessage="Enter non-standard Plex Media Server Port, default is 32400")]
+        
+        [int32]$PlexServerPort=32400,
+
+        #
+        [Parameter(ValueFromPipelineByPropertyName=$true,
+            HelpMessage="Enable HTTPS for Plex Web Check")]
+        
+        [switch]$PlexServerSSL,
+
         # Specify Username if Plex Media Server is running in a user context other than context of script execution
         [Parameter(ValueFromPipelineByPropertyName=$true,
             HelpMessage="Specify Windows Username when script is executing in a user context other than Plex Media Server/Plex Media Server Service Wrapper")]
+
         [string]$UserName,
+
         # Logfile
-        [Parameter(Mandatory=$false,
-            ValueFromPipelineByPropertyName=$true,
+        [Parameter(ValueFromPipelineByPropertyName=$true,
             HelpMessage="Enter Log File path, default is PSScriptRoot\Update-PlexMediaServer.log")]
         [ValidateNotNull()]
+
         [string]$LogFile="$PSScriptRoot\Update-PlexMediaServer.log",
+
         # Force update 
-        [Parameter(ParameterSetName="Force",
-            HelpMessage="Forces Update installation regardless of installed version")]
-        [Parameter(ParameterSetName="ServerAuth")]
-        [Parameter(ParameterSetName="TokenAuth")]
-        [Parameter(ParameterSetName="CredAuth")]
-        [Parameter(ParameterSetName="TextAuth")]
-        [Parameter(ParameterSetName="Passive")]
-        [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
-        [Parameter(ParameterSetName="EmailNotify")]
-        [Parameter(ParameterSetName="SlackNotify")]
+        [Parameter(HelpMessage="Forces Update installation regardless of installed version")]
+        
         [switch]$Force,
+
         # Report update Only
-        [Parameter(ParameterSetName='ReportOnly',
-            HelpMessage="Reports when update is required but does not downlaod and launch update")]
-        [Parameter(ParameterSetName="Passive")]
-        [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
-        [Parameter(ParameterSetName="EmailNotify")]
-        [Parameter(ParameterSetName="SlackNotify")]
+        [Parameter(HelpMessage="Reports when update is required but does not downlaod and launch update")]
+        
         [switch]$ReportOnly,
-        # Report update Only
-        [Parameter(ParameterSetName="NotifySuccess",
-            HelpMessage="Exits with ExitCode '10' if update was insatalled successfully")]
-        [Parameter(ParameterSetName="ServerAuth")]
-        [Parameter(ParameterSetName="TokenAuth")]
-        [Parameter(ParameterSetName="CredAuth")]
-        [Parameter(ParameterSetName="TextAuth")]
-        [Parameter(ParameterSetName="Passive")]
-        [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
-        [Parameter(ParameterSetName="EmailNotify")]
-        [Parameter(ParameterSetName="SlackNotify")]
+
+        # Notify Success
+        [Parameter(HelpMessage="Exits with ExitCode '10' if update was insatalled successfully")]        
+    
         [switch]$NotifySuccess,
+
         # Plex Server Build Build 
         [Parameter(HelpMessage="Forces Plex Media Server Build Architecture. If ommitted, Build Architecture is that of currently installed Plex Media Server Build.")]
         [ValidateSet('windows-x86','windows-x86_64')]
+        
         [string]$Build,
+
         # Cleanup old updates 
         [Parameter(HelpMessage="Enables cleanup of old updates. Set number of Updates to keep in Updates folder.")]
+
         [int32]$UpdateCleanup,
-        # passive - minimal UI no prompts
-        [Parameter(Mandatory=$true,
-            ParameterSetName="Passive",
-            HelpMessage="Displays minimal UI with no prompts")]
-        [switch]$Passive,
-        # quiet - no UI no prompts
-        [Parameter(Mandatory=$true,
-            ParameterSetName="Silent",
-            HelpMessage="Display no UI and no prompts")]
-        [switch]$Silent,
+        
         # For Email Notification configure all the below parameters in script or via command line 
-        [Parameter(Mandatory=$true,
-            ParameterSetName="EmailNotify",
+        [Parameter(ParameterSetName="EmailNotify",
             Position=0,
             HelpMessage="Enables email notification")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [switch]$EmailNotify,
+
         # Attach log file to notification if LogFile configured 
         [Parameter(ParameterSetName="EmailNotify",
             HelpMessage="Attach logfile with email notification")]
-        [Parameter(ParameterSetName="LogFile")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [switch]$AttachLog,
+        
         # Include log file contents in notification if LogFile configured 
         [Parameter(ParameterSetName="EmailNotify",
             HelpMessage="Attach logfile with email notification")]
-        [Parameter(ParameterSetName="LogFile")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [switch]$IncludeLog,
+        
         #
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="EmailNotify",
             ValueFromPipelineByPropertyName=$true,
             HelpMessage="Email notification recipient")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [string]$SmtpTo,
+        
         #
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="EmailNotify",
             ValueFromPipelineByPropertyName=$true,
             HelpMessage="Email notification sender")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [string]$SmtpFrom,
+        
         #
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="EmailNotify",
             ValueFromPipelineByPropertyName=$true,
             HelpMessage="SMTP Server Username")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [string]$SmtpUser,
+        
         #
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="EmailNotify",
             ValueFromPipelineByPropertyName=$true,
             HelpMessage="SMTP Server Password")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [string]$SmtpPassword,
+        
         #
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="EmailNotify",
             ValueFromPipelineByPropertyName=$true,
             HelpMessage="SMTP Server Name")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [string]$SmtpServer,
+        
         #
         [Parameter(ParameterSetName="EmailNotify",
             ValueFromPipelineByPropertyName=$true,
             HelpMessage="SMTP Server Port")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [int32]$SmtpPort,
+        
         # Enable SSL for SMTP Authentication 
         [Parameter(ParameterSetName="EmailNotify",
             HelpMessage="Enables SSL for SMTP Authentication")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [switch]$EnableSSL,
+        
         # Enable HTML Email Formating 
         [Parameter(ParameterSetName="EmailNotify",
             HelpMessage="Enables SSL for SMTP Authentication")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [switch]$EmailIsBodyHtml,
+        
         # For Slack Notification configure all the below parameters in script or via command line 
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="SlackNotify",
             Position=0,
             HelpMessage="Enables email notification")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [switch]$SlackNotify,
+        
         #
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="SlackNotify",
             ValueFromPipelineByPropertyName=$true,
             HelpMessage="Slack Channel Name")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+        
         [string]$SlackChannel,
+        
         #
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory,
             ParameterSetName="SlackNotify",
             ValueFromPipelineByPropertyName=$true,
             HelpMessage="Slack OAuth Token")]
         [Parameter(ParameterSetName="Passive")]
         [Parameter(ParameterSetName="Silent")]
-        [Parameter(ParameterSetName="2FA")]
+        [Parameter(ParameterSetName="ServerAuth")]
+        [Parameter(ParameterSetName="TokenAuth")]
+        [Parameter(ParameterSetName="CredAuth")]
+        [Parameter(ParameterSetName="TextAuth")]
+
         [string]$SlackToken
     )
 
     begin{
-        Write-Debug "ParameterSetName: {0}" -f $PSCmdlet.ParameterSetName
+        Write-Debug ("ParameterSetName: {0}" -f $PSCmdlet.ParameterSetName)
 
         #validate Build variable
         if( -not [System.Environment]::Is64BitOperatingSystem -and $Build -eq 'windows-x86_64'){
             if($LogFile){Write-Log -Message "Exiting: Plex Media Server (x64) build is not supported on x86 Systems." -Path $LogFile -Level Info}
             if(-not $Silent){Write-Host "Exiting: Plex Media Server (x64) build is not supported on x86 Systems." -ForegroundColor Red}
+            $Global:LASTEXITCODE=1
             break
         }
         # if([string]::IsNullOrEmpty($Build)){
@@ -401,23 +427,25 @@ Run Passive and update using Server Online Authentication Token.
 
         Try{
             #Begin process ParameterSets
-            if($PlexToken){#Plex Token specified via command-line
+            if($UseServerToken){
+                if($LogFile){Write-Log -Message "Server Online Token Authentication enabled via command-line" -Path $LogFile -Level Info}
+            }elseif($PlexToken){#Plex Token specified via command-line
                 if($LogFile){Write-Log -Message "Token Authentication enabled via command-line" -Path $LogFile -Level Info}
                 if(-not $Silent){Write-Host "Verifying Authentication Token..." -ForegroundColor Cyan -NoNewline}
-                if((Get-RestMethod -Uri "https://plex.tv/api/resources?X-Plex-Token=$PlexToken" -OutVariable response -PassThru -ErrorAction SilentlyContinue).exception){
-                    if($response.exception.Response){
-                        throw "Plex authentication token was not validated. Please verify or use Get-PlexToken to retrieve again. Server Response: $($response.exception.message)"
+                if((Get-RestMethod -Uri "https://plex.tv/api/v2/user?X-Plex-Token=$PlexToken" -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
+                    if($PlexUser.exception.Response){
+                        throw "Plex authentication token was not validated. Please verify or use Get-PlexToken to retrieve again. Server Response: $($PlexUser.exception.message)"
                     }else{
-                        throw "Unable to verify Plex authentication token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)"
+                        throw "Unable to verify Plex authentication token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($PlexUser.exception.message)"
                     }
                 }else{
                     if($LogFile){Write-Log -Message "Plex Authentication Token $PlexToken specified at command-line Validated" -Path $LogFile -Level Info}
-                    if(-not $Silent){Write-Host "Token Validated" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "Validated" -ForegroundColor Cyan}
                 }
             }elseif($PlexLogin -and $PlexPassword){#Plex.tv credentials specified via command-line
                 if($LogFile){Write-Log -Message "Credential Authentication enabled via command-line" -Path $LogFile -Level Info}
                 if(-not $Silent){Write-Host "Verifying Plex.tv Login..." -ForegroundColor Cyan -NoNewline}
-                if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -Plex2FA:$Plex2FA -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
+                if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -Plex2FA:$Plex2FA -Product 'Update-PlexMediaServer' -Version 'v2.0.7' -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
                     if($PlexUser.exception.Response){
                         throw "Unable to retrieve Plex authentication Token. Plex.tv Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)"
                     }else{
@@ -426,12 +454,12 @@ Run Passive and update using Server Online Authentication Token.
                 }else{
                     $PlexToken=$PlexUser.user.authToken
                     if($LogFile){Write-Log -Message "Plex authentication Token $($PlexUser.user.authToken) found for Plex user $($PlexUser.user.username)" -Path $LogFile -Level Info}
-                    if(-not $Silent){Write-Host "Credentials Validated" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "Validated" -ForegroundColor Cyan}
                 }
             }elseif($Credential -ne [System.Management.Automation.PSCredential]::Empty){#Plex.tv credentials specified via command-line using PSCredential Object
                 if($LogFile){Write-Log -Message "PSCredential Authentication enabled via command-line" -Path $LogFile -Level Info}
                 if(-not $Silent){Write-Host "Verifying Plex.tv Credentials..." -ForegroundColor Cyan -NoNewline}
-                if((Get-PlexToken -Credential $Credential -OutVariable PlexUser -Plex2FA:$Plex2FA -PassThru -ErrorAction SilentlyContinue).exception){
+                if((Get-PlexToken -Credential $Credential -OutVariable PlexUser -Plex2FA:$Plex2FA -Product 'Update-PlexMediaServer' -Version 'v2.0.7' -PassThru -ErrorAction SilentlyContinue).exception){
                     if($PlexUser.exception.Response){
                         throw "Unable to retrieve Plex authentication Token. Plex.tv Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)"
                     }else{
@@ -440,41 +468,30 @@ Run Passive and update using Server Online Authentication Token.
                 }else{
                     $PlexToken=$PlexUser.user.authToken
                     if($LogFile){Write-Log -Message "Plex authentication Token $($PlexUser.user.authToken) found for Plex user $($PlexUser.user.username)" -Path $LogFile -Level Info}
-                    if(-not $Silent){Write-Host "Credentials Validated" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "Validated" -ForegroundColor Cyan}
                 }
-            }elseif($UseServerToken){#Online Plex Server Token
-                if($LogFile){Write-Log -Message "Server Online Token Authentication enabled via command-line" -Path $LogFile -Level Info}
-                if(-not $Silent){Write-Host "Verifying Server Online Authentication Token..." -ForegroundColor Cyan -NoNewline}
-                $UseServerToken=$true                
             }else{
-                if(!($Passive -or $Quiet)){#interactive
-                    if($PlexLogin -or $PlexPassword){
-                        if(-not $Silent){Write-Host "Verifying Plex.tv Credentials..." -ForegroundColor Cyan -NoNewline}
-                        if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -Plex2FA:$Plex2FA -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
-                            if($PlexUser.exception.Response){
-                                throw "Unable to retrieve Plex authentication Token. Plex.tv Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)"
-                            }else{
-                                throw "Unable to retrieve Plex authentication Token. Unable to reach Plex.tv servers or they are not responding. Message: $($PlexUser.exception.message)"
-                            }
+                if($Passive -or $Silent){ #non-interactive
+                    if($LogFile){Write-Log -Message "Unable to determine Plex Authentication Token missing Plex.tv username or password from command line. Unable to prompt for information when running in non-interactive Quiet mode." -Path $LogFile -Level Info}
+                    if(-not $Silent){Write-Host "Unable to determine Plex Authentication Token without additional imput in passive/quiet mode." -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "     1. Configure PlexToken variable in script. Use Get-PlexToken." -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "     2. Specify your token in the command line, i.e. -plextoken <Token>" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "     3. Specify your plex.tv username/ID and password in the command line, i.e. -PlexLogin <email/id> -PlexPassword <password>" -ForegroundColor Cyan}
+                    throw "Unable to determin Plex Authentication Token."
+                }else{ #interactive
+                    if(-not $Silent){Write-Host "Verifying Plex.tv Credentials..." -ForegroundColor Cyan -NoNewline}
+                    if((Get-PlexToken -PlexLogin $PlexLogin -PlexPassword $PlexPassword -Plex2FA:$Plex2FA -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
+                        if($PlexUser.exception.Response){
+                            throw "Unable to retrieve Plex authentication Token. Plex.tv Username and/or password are incorrect. Server Response: $($PlexUser.exception.message)"
                         }else{
-                            $PlexToken=$PlexUser.user.authToken
-                            if($LogFile){Write-Log -Message "Plex authentication Token $($PlexUser.user.authToken) found for Plex user $($PlexUser.user.username)" -Path $LogFile -Level Info}
-                            if(-not $Silent){Write-Host "Credentials Validated" -ForegroundColor Cyan}
+                            throw "Unable to retrieve Plex authentication Token. Unable to reach Plex.tv servers or they are not responding. Message: $($PlexUser.exception.message)"
                         }
-                    }
-                }else{#non-interactive
-                    if($PlexLogin -or $PlexPassword){
-                        if($LogFile){Write-Log -Message "Unable to determine Plex Authentication Token missing Plex.tv username or password from command line. Unable to prompt for information when running in non-interactive Quiet mode." -Path $LogFile -Level Error}
-                        if(-not $Silent){Write-Host "Unable to determine Plex Authentication Token without additional imput in passive/quiet mode." -ForegroundColor Cyan}
-                        if(-not $Silent){Write-Host "     1. Configure PlexToken variable in script. Use Get-PlexToken." -ForegroundColor Cyan}
-                        if(-not $Silent){Write-Host "     2. Specify your token in the command line, i.e. -plextoken <Token>" -ForegroundColor Cyan}
-                        if(-not $Silent){Write-Host "     3. Specify your plex.tv username/ID and password in the command line, i.e. -PlexLogin <email/id> -PlexPassword <password>" -ForegroundColor Cyan}
-                        throw "Unable to determin Plex Authentication Token."
+                    }else{
+                        $PlexToken=$PlexUser.user.authToken
+                        if($LogFile){Write-Log -Message "Plex authentication Token $($PlexUser.user.authToken) found for Plex user $($PlexUser.user.username)" -Path $LogFile -Level Info}
+                        if(-not $Silent){Write-Host "Credentials Validated" -ForegroundColor Cyan}
                     }
                 }
-                if($LogFile){Write-Log -Message "Server Online Token Authentication execution enabled" -Path $LogFile -Level Info}
-                if(-not $Silent){Write-Host "Verifying Server Online Authentication Token..." -ForegroundColor Cyan -NoNewline}
-                $UseServerToken=$true
             }
 
             #Begin Prcess Arguments
@@ -519,6 +536,7 @@ Run Passive and update using Server Online Authentication Token.
             #Find Plex Media Server Setttings Key
             $PMSSettingsKeys=Get-ItemProperty 'HKU:\*\SOFTWARE\Plex, Inc.\Plex Media Server','HKLM:\SOFTWARE\Plex, Inc.\Plex Media Server','HKLM:\SOFTWARE\WOW6432Node\Plex, Inc.\Plex Media Server' -ErrorAction SilentlyContinue
             if($PMSSettingsKeys){
+                if(-not $Silent){Write-Host "Searching for Plex Media Server Installation..." -ForegroundColor Cyan -NoNewline}
                 if($LogFile){Write-Log -Message "Plex Media Server Settings found in Registry [Count: $($PMSSettingsKeys.Count)]" -Path $LogFile -Level Info}
                 foreach($Key in $PmsSettingsKeys){
                     if(Get-ItemProperty "$($Key.InstallFolder)\Plex Media Server.exe" -OutVariable PMSExeFile -ErrorAction SilentlyContinue){
@@ -533,48 +551,62 @@ Run Passive and update using Server Online Authentication Token.
                     }else{
                         $PMSSettings=$Key
                         if($LogFile){Write-Log -Message "Plex Settings Key Found $($Key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::',''))" -Path $LogFile -Level Info}
-                        switch($PmsSettings.ButlerUpdateChannel){
-                            ''{$ButlerUpdateChannel="Public"}
-                            0{$ButlerUpdateChannel="Public"}
-                            8{$ButlerUpdateChannel="Beta"}
-                            default {if($LogFile){Write-Log -Message "Unknown Update Channel Value [$_]" -Path $LogFile -Level Warn}}
-
-                        }
-                        if($LogFile){Write-Log -Message "UpdateChannel: $ButlerUpdateChannel" -Path $LogFile -Level Info}
-                        $LocalAppDataPath=$PmsSettings.LocalAppDataPath
-                        if($LogFile){Write-Log -Message "LocalAppDataPath: $LocalAppDataPath" -Path $LogFile -Level Info}
-                        $PlexOnlineMail=$PmsSettings.PlexOnlineMail
-                        if($LogFile){Write-Log -Message "PlexOnlineMail: $PlexOnlineMail" -Path $LogFile -Level Info}
-                        $PlexOnlineUsername=$PmsSettings.PlexOnlineUsername
-                        if($LogFile){Write-Log -Message "PlexOnlineUsername: $PlexOnlineUsername" -Path $LogFile -Level Info}
-                        $PlexOnlineToken=$PmsSettings.PlexOnlineToken
-                        if($LogFile){Write-Log -Message "PlexOnlineToken: $PlexOnlineToken" -Path $LogFile -Level Info}
                     }
                     if($InstallFolder -and $PlexOnlineToken){Break}
                 }
+                if($PMSSettings){
+                    if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
+                    switch($PmsSettings.ButlerUpdateChannel){
+                        ''{$ButlerUpdateChannel="Public"}
+                        0{$ButlerUpdateChannel="Public"}
+                        8{$ButlerUpdateChannel="Beta"}
+                        default {if($LogFile){Write-Log -Message "Unknown Update Channel Value [$_]" -Path $LogFile -Level Info}}
+
+                    }
+                    if(-not $Silent){Write-Host "`t Update Channel: $ButlerUpdateChannel" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "UpdateChannel: $ButlerUpdateChannel" -Path $LogFile -Level Info}
+                    $LocalAppDataPath=$PmsSettings.LocalAppDataPath
+                    if(-not $Silent){Write-Host "`t LocalAppData Path: $LocalAppDataPath" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "LocalAppDataPath: $LocalAppDataPath" -Path $LogFile -Level Info}
+                    $PlexOnlineMail=$PmsSettings.PlexOnlineMail
+                    if(-not $Silent){Write-Host "`t Online Mail: $PlexOnlineMail" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "PlexOnlineMail: $PlexOnlineMail" -Path $LogFile -Level Info}
+                    $PlexOnlineUsername=$PmsSettings.PlexOnlineUsername
+                    if(-not $Silent){Write-Host "`t Online UserName: $PlexOnlineUsername" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "PlexOnlineUsername: $PlexOnlineUsername" -Path $LogFile -Level Info}
+                    $PlexOnlineToken=$PmsSettings.PlexOnlineToken
+                    if(-not $Silent){Write-Host "`t Online Token: $PlexOnlineToken" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "PlexOnlineToken: $PlexOnlineToken" -Path $LogFile -Level Info}
+                }else{
+                    if(-not $Silent){Write-Host "Error" -ForegroundColor Cyan}
+                    if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry" -Path $LogFile -Level Info}
+                }
             }else{
-                if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry" -Path $LogFile -Level Warn}
+                if($LogFile){Write-Log -Message "No Plex Plex Media Server Keys found in Registry" -Path $LogFile -Level Info}
             }
 
             if($UseServerToken){
-                if((Get-RestMethod -Uri "https://plex.tv/api/resources?X-Plex-Token=$PlexOnlineToken" -OutVariable response -PassThru -ErrorAction SilentlyContinue).exception){
-                    if($response.exception.Response){
-                        throw "Plex Server Online Authentication Token was not validated. Please verify Plex Server is logged in and clamed. Server Response: $($response.exception.message)"
+                if(-not $Silent){Write-Host "Verifying Server Online Authentication Token..." -ForegroundColor Cyan -NoNewline}
+                if((Get-RestMethod -Uri "https://plex.tv/api/v2/user?X-Plex-Token=$PlexOnlineToken" -OutVariable PlexUser -PassThru -ErrorAction SilentlyContinue).exception){
+                    if($PlexUser.Exception.Response){
+                        throw "Plex Server Online Authentication Token was not validated. Please verify Plex Server is logged in and clamed. Server Response: $($PlexUser.Exception.message)"
                     }else{
-                        throw "Unable to verify Plex Server Online Authentication Token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($response.exception.message)"
+                        throw "Unable to verify Plex Server Online Authentication Token. Unable to reach Plex.tv servers or they are unresponsive. Message: $($PlexUser.Exception.message)"
                     }
                 }else{
                     if($LogFile){Write-Log -Message "Plex Server Online Authentication Token $PlexOnlineToken Validated" -Path $LogFile -Level Info}
-                    if(-not $Silent){Write-Host "Server Token Validated" -ForegroundColor Cyan}
-                    if(-not $Silent){Write-Host "`t Username: $($PmsSettings.PlexOnlineUsername)" -ForegroundColor Cyan}
-                    if(-not $Silent){Write-Host "`t authToken: $($PlexOnlineToken)" -ForegroundColor Cyan}
-                    if(-not $Silent){Write-Host "`t Update Channel: $ButlerUpdateChannel" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "Validated" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Username: $($PlexUser[0].user.username)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t authToken: $($PlexUser[0].user.authToken)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Subscription: $($PlexUser[0].user.subscription.status)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Plan: $($PlexUser[0].user.subscription.plan)" -ForegroundColor Cyan}
+                    $PlexPassStatus=$PlexUser[0].user.subscription.active
                 }
                 $PlexToken=$PlexOnlineToken
                 if($ButlerUpdateChannel -eq "Public"){$DisablePlexPass=$true}
             }
 
-            if(-not $Silent){Write-Host "Checking Plex Media Server Status..." -ForegroundColor Cyan -NoNewline}
+            if(-not $Silent){Write-Host "Checking Plex Media Server Process Status..." -ForegroundColor Cyan -NoNewline}
             if($PMSExeFile){
                 $installedVersion,$installedBuild = $PMSExeFile.VersionInfo.ProductVersion.Split('-')
                 if($LogFile){Write-Log -Message "Plex Media Server executable $PMSExeFile is version $installedVersion configured to run as user $UserName" -Path $LogFile -Level Info}
@@ -605,11 +637,17 @@ Run Passive and update using Server Online Authentication Token.
 
             #Sanity Check
             if(-not $PMSSettings -and -not $PMSProcess -and -not $PMSExeFile){
-                throw "Plex Media Server does not appera to be running or installed."
+                throw "Plex Media Server does not appear to be running or installed."
             }
 
-            if(-not $Silent){Write-Host "`t Version: $installedVersion" -ForegroundColor Cyan}
-            if(-not $Silent){Write-Host "`t Build: $installedBuild" -ForegroundColor Cyan}
+            #determine currently installed bitness of PMS exe
+            if((Get-FileBitness $PMSExeFile.FullName) -eq 'I386'){
+                $CurrentBuild='windows-x86'
+            }else{
+                $CurrentBuild='windows-x86_64'
+            }
+            if(-not $Silent){Write-Host "`t Version: $installedVersion ($installedBuild)" -ForegroundColor Cyan}
+            if(-not $Silent){Write-Host "`t Build: $CurrentBuild" -ForegroundColor Cyan}
             if(-not $Silent){Write-Host "`t Path: $PMSExeFile" -ForegroundColor Cyan}
             if(-not $Silent){Write-Host "`t User Context: $UserName" -ForegroundColor Cyan}
 
@@ -619,13 +657,13 @@ Run Passive and update using Server Online Authentication Token.
                 $hostname = $PlexServerHostName
             }else{
                 while((Get-RestMethod -Uri http://ipinfo.io/json -ErrorAction SilentlyContinue -PassThru -OutVariable HostNameResponse | Select-Object -ExpandProperty hostname -ErrorAction SilentlyContinue -OutVariable hostname) -eq $null){
-                    if($LogFile){Write-Log -Message "Unable to determin Hostname, retrying. $($HostNameResponse.exception.message) Error: ($($HostNameResponse.exception.HResult))" -Path $LogFile -Level Warn}
+                    if($LogFile){Write-Log -Message "Unable to determin Hostname, retrying. $($HostNameResponse.exception.message) Error: ($($HostNameResponse.exception.HResult))" -Path $LogFile -Level Info}
                     Start-Sleep -Milliseconds 5
                 }
                 if($LogFile){Write-Log -Message "HostName is $hostname" -Path $LogFile -Level Info}
             }
 
-            if($PlexServerPort -eq 443){$PlexServerScheme='https'}else{$PlexServerScheme='http'}
+            if($PlexServerSSL){$PlexServerScheme='https'}else{$PlexServerScheme='http'}
             $PlexServerUri="$($PlexServerScheme)://$($hostname):$PlexServerPort/"
             $PlexServerPrefsUri="$($PlexServerScheme)://$($hostname):$PlexServerPort/:/prefs/"
             $PlexServerLocationUri="$($PlexServerScheme)://$($hostname):$PlexServerPort/servers/"
@@ -640,30 +678,32 @@ Run Passive and update using Server Online Authentication Token.
             }
 
             #check Plex Server Availability
-            if((Get-RestMethod -Uri $PlexServerUri -PassThru -OutVariable PlexWeb -ErrorAction SilentlyContinue).exception){
-                if($PlexWeb.exception.Response){
-                    if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri. Message: $($PlexWeb.exception.Message) (Error: $($PlexWeb.exception.HResult)) StatusDescription: $($PlexWeb.exception.Response.StatusDescription) (StatusCode: $($PlexWeb.exception.Response.StatusCode.value__))" -Path $LogFile -Level Warn}
-                    if(-not $Silent){Write-Host $PlexWeb.exception.message -ForegroundColor Red}
+            if((Get-RestMethod -Uri $PlexServerUri -PassThru -OutVariable PlexWeb -ErrorAction SilentlyContinue).Exception){
+                if(-not $Silent){Write-Host "Unavailable" -ForegroundColor Red}
+                if($PlexWeb.Exception.Response){
+                    if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri. Message: $($PlexWeb.Exception.Message) (Error: $($PlexWeb.Exception.HResult)) StatusDescription: $($PlexWeb.Exception.Response.StatusDescription) (StatusCode: $($PlexWeb.Exception.Response.StatusCode.value__))" -Path $LogFile -Level Info}
+                    if(-not $Silent){Write-Host $PlexWeb.Exception.message -ForegroundColor Red}
+                    switch($PlexWeb.Exception.Response.StatusCode.value__){
+                        401{
+                            if(-not $Silent){Write-Host "Username and/or password incorrect or invalid Plex Authentication token povided. StatusDescription: $($PlexWeb.Exception.Response.StatusDescription) (StatusCode: $($PlexWeb.Exception.Response.StatusCode.value__))"}
+                        }
+                        201{
+                            if(-not $Silent){Write-Host "Failed to log in. StatusDescription: $($PlexWeb.Exception.Response.StatusDescription) (StatusCode: $($PlexWeb.Exception.Response.StatusCode.value__))"}
+                        }
+                        else{
+                            if(-not $Silent){Write-Host "Unknown Response. Message: $($PlexWeb.Exception.Response.StatusDescription) (Error: $($PlexWeb.Exception.Response.StatusCode.value__)" -ForegroundColor Red}
+                        }
+                    }
                 }else{
-                    if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri" -Path $LogFile -Level Warn}
-                }
-                switch($PlexWeb.exception.Response.StatusCode.value__){
-                    401{
-                        if(-not $Silent){Write-Host "Username and/or password incorrect or invalid Plex Authentication token povided. StatusDescription: $($PlexWeb.exception.Response.StatusDescription) (StatusCode: $($PlexWeb.exception.Response.StatusCode.value__))"}
-                    }
-                    201{
-                        if(-not $Silent){Write-Host "Failed to log in. StatusDescription: $($PlexWeb.exception.Response.StatusDescription) (StatusCode: $($PlexWeb.exception.Response.StatusCode.value__))"}
-                    }
-                    else{
-                        if(-not $Silent){Write-Host "Unknown Response. Message: $($PlexWeb.exception.Response.StatusDescription) (Error: $($PlexWeb.exception.Response.StatusCode.value__)" -ForegroundColor Red}
-                    }
+                    if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri" -Path $LogFile -Level Info}
                 }
             }else{
                 if(-not $Silent){Write-Host "Available" -ForegroundColor Cyan}
                 if($PlexWeb[0].MediaContainer){
                     if($PlexWeb[0].MediaContainer.version){$installedVersion,$installedBuild = $PlexWeb[0].MediaContainer.version.Split('-')}
                     if($LogFile){Write-Log -Message "Plex Web version $installedVersion" -Path $LogFile -Level Info}
-                    if(-not $Silent){Write-Host "`t Version: $($PlexWeb[0].MediaContainer.version)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Hostname: $hostname" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Version: $installedVersion ($InstalledBuild)" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t Friendly Name: $($PlexWeb[0].MediaContainer.friendlyName)" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t PlexUsername: $($PlexWeb[0].MediaContainer.myPlexUserName)" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t Signin State: $($PlexWeb[0].MediaContainer.myPlexSigninState)" -ForegroundColor Cyan}
@@ -671,24 +711,24 @@ Run Passive and update using Server Online Authentication Token.
                     if(-not $Silent){Write-Host "`t Platform Version: $($PlexWeb[0].MediaContainer.platformVersion)" -ForegroundColor Cyan}
                     switch ($PlexWeb[0].MediaContainer.myPlexSubscription) {
                         0 {
-                            if(-not $Silent){Write-Host "`t Plex Subscription: False" -ForegroundColor Cyan}
+                            if(-not $Silent){Write-Host "`t PlexPass: False" -ForegroundColor Cyan}
                             $PlexPassStatus="False"
                         }
                         1 { 
-                            if(-not $Silent){Write-Host "`t Plex Subscription: True" -ForegroundColor Cyan}
+                            if(-not $Silent){Write-Host "`t PlexPass: True" -ForegroundColor Cyan}
                             $PlexPassStatus="True"
                         }
-                        Default {if(-not $Silent){Write-Host "`t Plex Subscription: Unknown" -ForegroundColor Cyan}}
+                        Default {if(-not $Silent){Write-Host "`t PlexPass: Unknown" -ForegroundColor Cyan}}
                     }
                 }else{
                     if($LogFile){Write-Log -Message "Data missing from server response $PlexWeb" -Path $LogFile -Level Info}
                 }
-                if((Get-RestMethod -Uri $PlexServerPrefsUri -PassThru -OutVariable PlexWebPrefs -ErrorAction SilentlyContinue).exception){
-                    if($PlexWebPrefs.exception.Response){
-                        if($LogFile){Write-Log -Message "Plex Media Server Preferences unavailable at $PlexServerUri. Message: $($PlexWebPrefs.exception.Message) (Error: $($PlexWebPrefs.exception.HResult)) StatusDescription: $($PlexWebPrefs.exception.Response.StatusDescription) (StatusCode: $($PlexWebPrefs.exception.Response.StatusCode.value__))" -Path $LogFile -Level Warn}
+                if((Get-RestMethod -Uri $PlexServerPrefsUri -PassThru -OutVariable PlexWebPrefs -ErrorAction SilentlyContinue).Exception){
+                    if($PlexWebPrefs.Exception.Response){
+                        if($LogFile){Write-Log -Message "Plex Media Server Preferences unavailable at $PlexServerUri. Message: $($PlexWebPrefs.exception.Message) (Error: $($PlexWebPrefs.exception.HResult)) StatusDescription: $($PlexWebPrefs.exception.Response.StatusDescription) (StatusCode: $($PlexWebPrefs.exception.Response.StatusCode.value__))" -Path $LogFile -Level Info}
                         if(-not $Silent){Write-Host $PlexWebPrefs.exception.message -ForegroundColor Red}
                     }else{
-                        if($LogFile){Write-Log -Message "Plex Media Server Preferences unavailable at $PlexServerUri" -Path $LogFile -Level Warn}
+                        if($LogFile){Write-Log -Message "Plex Media Server Preferences unavailable at $PlexServerUri" -Path $LogFile -Level Info}
                     }
                     switch($PlexWebPrefs.exception.Response.StatusCode.value__){
                         401{
@@ -710,7 +750,7 @@ Run Passive and update using Server Online Authentication Token.
                     }
                     if($ButlerUpdateChannel){if(-not $Silent){Write-Host "`t Update Channel: $ButlerUpdateChannel" -ForegroundColor Cyan}}
                 }else{
-                    if($LogFile){Write-Log -Message "Data missing from server response $PlexWebPrefs" -Path $LogFile -Level Warn}
+                    if($LogFile){Write-Log -Message "Data missing from server response $PlexWebPrefs" -Path $LogFile -Level Info}
                 }
             }
 
@@ -724,19 +764,13 @@ Run Passive and update using Server Online Authentication Token.
                     if(-not $Silent){Write-Host "`t Version: $($PmsServiceFile.VersionInfo.FileVersion)" -ForegroundColor Cyan}
                 }else{
                     if(-not $Silent){Write-Host "Not Installed" -ForegroundColor Cyan}
-                    if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Not Registered as a Service." -Path $LogFile -Level Error}
+                    if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Not Registered as a Service." -Path $LogFile -Level Info}
                 }
             }Else{
                 if(-not $Silent){Write-Host "Not Installed" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Not Installed." -Path $LogFile -Level Error}
+                if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Not Installed." -Path $LogFile -Level Info}
             }
 
-            #determine currently installed bitness of PMS exe
-            if((Get-FileBitness $PMSExeFile.FullName) -eq 'I386'){
-                $CurrentBuild='windows-x86'
-            }else{
-                $CurrentBuild='windows-x86_64'
-            }
             #if build not set by parameter then set to currently installed build
             if([string]::IsNullOrEmpty($Build)){
                 $Build=$CurrentBuild
@@ -767,33 +801,42 @@ Run Passive and update using Server Online Authentication Token.
                 $UpdateRequired=$true
                 if($LogFile){Write-Log -Message "New version available. Available Update version ($releaseVersion) greater than installed version ($installedVersion)." -Path $LogFile -Level Info}
                 if(-not $Silent){Write-Host "Update Available!!!" -ForegroundColor Green}
-                if($ReportOnly){exit 7}
+                if($ReportOnly){
+                    $Global:LASTEXITCODE=7
+                    break
+                }
                 $ArgumentList = "/install" 
             }elseif([version]$releaseVersion -lt [version]$installedVersion){
                 if($LogFile){Write-Log -Message "Available Update version ($releaseVersion) less than installed version ($installedVersion)." -Path $LogFile -Level Info}
-                if($force){
+                if($Force){
+                    if(-not $Silent){Write-Host "Available Update version ($releaseVersion) less than installed version ($installedVersion)." -ForegroundColor Cyan}
                     $UpdateRequired=$true
                     $ArgumentList = "/install"
                     if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
                 }else{
                     if(-not $Silent){Write-Host "Available Update version ($releaseVersion) less than installed version ($installedVersion). Use -force to force installation." -ForegroundColor Cyan}
-                    exit 0
+                    throw "Available Update version ($releaseVersion) less than installed version ($installedVersion)"
                 }
             }else{
                 if($LogFile){Write-Log -Message "Version up-to-date. Available Update version ($releaseVersion) equal to installed version ($installedVersion)." -Path $LogFile -Level Info}
-                if($force){
+                if($Force){
+                    if(-not $Silent){Write-Host "Latest Version $installedVersion already installed." -ForegroundColor Cyan}
                     $UpdateRequired=$true
                     $ArgumentList = "/repair" 
                     if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
                 }else{
-                    if(-not $Silent){Write-Host "Latest Version $installedVersion already installed. Use -force to force installation." -ForegroundColor Cyan}
-                    exit 0
+                    if(-not $Silent){Write-Host "Latest Version $installedVersion already installed. Use -Force to force installation." -ForegroundColor Cyan}
+                    return $true
                 }
             }
 
-            if(-not $Silent){Write-Host "`t PlexPass(Beta): $PlexPassStatus" -ForegroundColor Cyan}
-            if(-not $Silent){Write-Host "`t Update Version: $releaseVersion" -ForegroundColor Cyan}
-            if(-not $Silent){Write-Host "`t Update Build: $releaseBuild" -ForegroundColor Cyan}
+            if(-not $Silent){Write-Host "`t Version: $releaseVersion ($releaseBuild)" -ForegroundColor Cyan}
+            if(-not $Silent){Write-Host "`t Build: $Build" -ForegroundColor Cyan}
+            if($DisablePlexPass){
+                if(-not $Silent){Write-Host "`t Channel: Public" -ForegroundColor Cyan}
+            }else{
+                if(-not $Silent){Write-Host "`t Channel: Beta" -ForegroundColor Cyan}
+            }
 
             ### Begin Update ###
 
@@ -829,45 +872,48 @@ Run Passive and update using Server Online Authentication Token.
                     if(-not $Silent){Write-Host "Completed" -ForegroundColor Cyan}
                     Write-Verbose "WebRequest result $([int]$response.StatusCode)"
                 }else{
-                    if($LogFile){Write-Log -Message "Exiting: Error downloading $releaseUrl. StatusDescription: $($response.StatusDescription) StatusCode: $($response.StatusCode)" -Path $LogFile -Level Error}
-                    exit 4
+                    if($LogFile){Write-Log -Message "Exiting: Error downloading $releaseUrl. StatusDescription: $($response.StatusDescription) StatusCode: $($response.StatusCode)" -Path $LogFile -Level Info}
+                    throw "Exiting: Error downloading $releaseUrl. StatusDescription: $($response.StatusDescription) StatusCode: $($response.StatusCode)"
+                    $Global:LASTEXITCODE=4
+                    break
                 }
             }
 
             #Check if Server in use
-            if(-not $Silent){Write-Host "Checking Active Plex Sessions..." -ForegroundColor Cyan -NoNewline}
-            #if((Get-Process -Name 'PlexTranscoder','PlexNewTranscoder' -ErrorAction SilentlyContinue){
-            if((Get-RestMethod -Uri $PlexServerSessionUri -ErrorAction SilentlyContinue -PassThru -OutVariable PmsSessions).exception){
-                if(-not $Silent){Write-Host $PlexServerSessions.exception.message -ForegroundColor Red}
-                if($LogFile){Write-Log -Message "Exception determining active sessions. $PmsSessions[0].exception.message" -Path $LogFile -Level Warn}
-            }else{
-                if($PmsSessions[0].MediaContainer.size -eq 0){
-                    if($LogFile){Write-Log -Message "No active sessions found." -Path $LogFile -Level Info}
+#            if($PlexWeb){
+                if(-not $Silent){Write-Host "Checking Active Plex Sessions..." -ForegroundColor Cyan -NoNewline}
+                if((Get-RestMethod -Uri $PlexServerSessionUri -ErrorAction SilentlyContinue -PassThru -OutVariable PmsSessions).Exception){
+                    if(-not $Silent){Write-Host $PmsSessions.Exception.Message -ForegroundColor Red}
+                    if($LogFile){Write-Log -Message "Exception determining active sessions. $($PmsSessions[0].Exception.message)" -Path $LogFile -Level Info}
                 }else{
-                    if($LogFile){Write-Log -Message "Active Sessions found: $([int]$PmsSessions[0].MediaContainer.size)" -Path $LogFile -Level Info}
+                    if([int]$PmsSessions[0].MediaContainer.size -eq 0){
+                        if($LogFile){Write-Log -Message "No active sessions found." -Path $LogFile -Level Info}
+                    }else{
+                        if($LogFile){Write-Log -Message "Active Sessions found: $([int]$PmsSessions[0].MediaContainer.size)" -Path $LogFile -Level Info}
+                    }
                 }
-            }
-            if((Get-RestMethod -Uri $PlexServerLiveTvSessionUri -ErrorAction SilentlyContinue -PassThru -OutVariable LiveTvSessions).exception){
-                if(-not $Silent){Write-Host $LiveTvSessions.exception.message -ForegroundColor Red}
-                if($LogFile){Write-Log -Message "Exception determining Live TV/DVR sessions. $LiveTvSessions.exception.message" -Path $LogFile -Level Warn}
-            }else{
-                if([int]$LiveTvSessions[0].MediaContainer.Video.index -eq 0){
-                    if($LogFile){Write-Log -Message "No active Live TV/DVR Sessions found" -Path $LogFile -Level Info}
+                if((Get-RestMethod -Uri $PlexServerLiveTvSessionUri -ErrorAction SilentlyContinue -PassThru -OutVariable LiveTvSessions).Exception){
+                    if(-not $Silent){Write-Host $LiveTvSessions.Exception.message -ForegroundColor Red}
+                    if($LogFile){Write-Log -Message "Exception determining Live TV/DVR sessions. $($LiveTvSessions.Exception.message)" -Path $LogFile -Level Info}
                 }else{
-                    if($LogFile){Write-Log -Message "Active Live TV/DVR Sessions found: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -Path $LogFile -Level Info}
+                    if([int]$LiveTvSessions[0].MediaContainer.Video.index -eq 0){
+                        if($LogFile){Write-Log -Message "No active Live TV/DVR Sessions found" -Path $LogFile -Level Info}
+                    }else{
+                        if($LogFile){Write-Log -Message "Active Live TV/DVR Sessions found: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -Path $LogFile -Level Info}
+                    }
                 }
-            }
-            if(([int]$PmsSessions[0].MediaContainer.size -eq 0) -and ([int]$LiveTvSessions[0].MediaContainer.Video.index -eq 0)){
-                if(-not $Silent){Write-Host "No Sessions" -ForegroundColor Cyan}
-                if(-not $Silent){Write-Host "`t Current Sessons: $([int]$PmsSessions[0].MediaContainer.size)" -ForegroundColor Cyan}
-                if(-not $Silent){Write-Host "`t Current Live TV/DVR Sessons: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -ForegroundColor Cyan}
-            }else{
-                if($LogFile){Write-Log -Message "Server $($PlexWeb[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -Path $LogFile -Level Warn}
-                if(-not $Silent){Write-Host "`t Current Sessions: $([int]$PmsSessions[0].MediaContainer.size)" -ForegroundColor Cyan}
-                if(-not $Silent){Write-Host "`t Current Live TV/DVR Sessions: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -ForegroundColor Cyan}
-                if(-not $Silent){Write-Host "Server $($PlexWeb[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -ForegroundColor Cyan}
-                exit 6
-            }
+                if(([int]$PmsSessions[0].MediaContainer.size -eq 0) -and ([int]$LiveTvSessions[0].MediaContainer.Video.index -eq 0)){
+                    if(-not $Silent){Write-Host "No Sessions" -ForegroundColor Cyan}
+                }else{
+                    if($LogFile){Write-Log -Message "Server $($PlexWeb[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -Path $LogFile -Level Info}
+                    if(-not $Silent){Write-Host "$([int]$PmsSessions[0].MediaContainer.size+[int]$LiveTvSessions[0].MediaContainer.Video.index) Active Session(s)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Streaming: $([int]$PmsSessions[0].MediaContainer.size)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Live TV/DVR: $([int]$LiveTvSessions[0].MediaContainer.Video.index)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "Server $($PlexWeb[0].MediaContainer.friendlyName) is currently being used by one or more users, skipping installation. Please run again later" -ForegroundColor Cyan}
+                    $Global:LASTEXITCODE=6
+                    break
+                }
+#            }
 
             #Stop Plex Media Server Service Wrapper (PlexService)
             if($PmsService){
@@ -878,11 +924,11 @@ Run Passive and update using Server Online Authentication Token.
                     if($PmsService | Stop-Service -ErrorAction SilentlyContinue -PassThru){
                         if($LogFile){Write-Log -Message "Sent Plex Media Server Service Wrapper (PlexService) Stop-Service." -Path $LogFile -Level Info}
                     }else{
-                        if($LogFile){Write-Log -Message "Error sending Plex Media Server Service Wrapper (PlexService) Stop-Process." -Path $LogFile -Level Error}
+                        if($LogFile){Write-Log -Message "Error sending Plex Media Server Service Wrapper (PlexService) Stop-Process." -Path $LogFile -Level Info}
                     }
                     Start-Sleep -Seconds 1
                     While ($PmsService.Status -eq "Running"){
-                        if($LogFile){Write-Log -Message "Service not responding to Stop-Service, Sending Plex Media Server Service Wrapper (PlexService) Stop-Process -Force." -Path $LogFile -Level Warn}
+                        if($LogFile){Write-Log -Message "Service not responding to Stop-Service, Sending Plex Media Server Service Wrapper (PlexService) Stop-Process -Force." -Path $LogFile -Level Info}
                         if(Stop-Process -Name PlexService -ErrorAction SilentlyContinue -Force -PassThru){
                             if($LogFile){Write-Log -Message "Plex Media Server Service Wrapper (PlexService) Stop-Process -Force Successful." -Path $LogFile -Level Info}
                         }else{
@@ -967,13 +1013,16 @@ Run Passive and update using Server Online Authentication Token.
                 }elseif($Process.ExitCode -eq 3010 ){
                     if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
-                    if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Warn}
+                    if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
                 }elseif($Process.ExitCode -eq 1602 ){
-                    if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
+                    if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                    if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
                 }elseif($Process.ExitCode -eq 2 ){
-                    if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
+                    if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                    if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
                 }else{
-                    if($LogFile){Write-Log -Message "Plex Media Server failed to uninstall. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Error}
+                    if(-not $Silent){Write-Host "Error" -ForegroundColor Red}
+                    if($LogFile){Write-Log -Message "Plex Media Server failed to uninstall. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}
                 }
             }
 
@@ -1000,9 +1049,9 @@ Run Passive and update using Server Online Authentication Token.
                     }
                 }
             }else{
-                if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry" -Path $LogFile -Level Warn}
+                if($LogFile){Write-Log -Message "Plex Media Server installation not found in Registry" -Path $LogFile -Level Info}
             }
-            
+
             if($Process.ExitCode -eq 0){
                 [bool]$UpdateSuccess=$true
                 if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
@@ -1014,16 +1063,19 @@ Run Passive and update using Server Online Authentication Token.
                 if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
                 if(-not $Silent){Write-Host "`t Version Installed: $($(Get-ItemProperty -Path $PMSExeFile).VersionInfo.FileVersion)" -ForegroundColor Cyan}
                 if(-not $Silent){Write-Host "`t Restart required: True" -ForegroundColor Cyan}
-                if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Warn}
+                if($LogFile){Write-Log -Message "Update successfully installed with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 2 ){
                 [bool]$UpdateSuccess=$false
-                if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
+                if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
             }elseif($Process.ExitCode -eq 1602 ){
                 [bool]$UpdateSuccess=$false
-                if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Warn}
+                if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                if($LogFile){Write-Log -Message "Update was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}
             }else{
                 [bool]$UpdateSuccess=$false
-                if($LogFile){Write-Log -Message "Update failed to install. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Error}
+                if(-not $Silent){Write-Host "Error" -ForegroundColor Red}
+                if($LogFile){Write-Log -Message "Update failed to install. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}
             }
 
             #cleanup Run keys after install
@@ -1053,7 +1105,7 @@ Run Passive and update using Server Online Authentication Token.
                                 $return=$_.Exception
                             }
                             if($return){
-                                if($LogFile){Write-Log -Message "Error removing folder $("$LocalAppDataPath\Plex Media Server\Updates\" + ($PmsUpdate.FullName).Replace("$LocalAppDataPath\Plex Media Server\Updates\",'').split("\")[0]) Error: $($return.GetType().Name)" -Path $LogFile -Level Warn}
+                                if($LogFile){Write-Log -Message "Error removing folder $("$LocalAppDataPath\Plex Media Server\Updates\" + ($PmsUpdate.FullName).Replace("$LocalAppDataPath\Plex Media Server\Updates\",'').split("\")[0]) Error: $($return.GetType().Name)" -Path $LogFile -Level Info}
                                 $return=$null
                             }else{
                                 if($LogFile){Write-Log -Message "Removed folder $("$LocalAppDataPath\Plex Media Server\Updates\" + ($PmsUpdate.FullName).Replace("$LocalAppDataPath\Plex Media Server\Updates\",'').split("\")[0])" -Path $LogFile -Level Info}
@@ -1105,48 +1157,46 @@ Run Passive and update using Server Online Authentication Token.
                 if(-not $Silent){Write-Host "." -ForegroundColor Cyan -NoNewline}
                 $loopcount++
             }until((Get-RestMethod -Uri $PlexServerUri -PassThru -OutVariable PlexWeb -ErrorAction SilentlyContinue).MediaContainer -or $loopcount -gt 10)
-            if($PlexWeb.exception){
-                if($PlexWeb.exception.Response){
-                    if($LogFile){Write-Log -Message "Plex Web unavailable at $PlexServerUri. Message: $($PlexWeb.exception.Message) (Error: $($PlexWeb.exception.HResult)) StatusDescription: $($PlexWeb.exception.Response.StatusDescription) (StatusCode: $($PlexWeb.exception.Response.StatusCode.value__))" -Path $LogFile -Level Warn}
-                    if(-not $Silent){Write-Host $PlexWeb.exception.message -ForegroundColor Red}
-                }else{
-                    if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri" -Path $LogFile -Level Info}
-                }
-                switch($PlexWeb.exception.Response.StatusCode.value__){
-                    401{
-                        if(-not $Silent){Write-Host "Username and/or password incorrect or invalid Plex Authentication token povided. StatusDescription: $($PlexWeb.exception.Response.StatusDescription) (StatusCode: $($PlexWeb.exception.Response.StatusCode.value__))"}
-                    }
-                    201{
-                        if(-not $Silent){Write-Host "Failed to log in. StatusDescription: $($PlexWeb.exception.Response.StatusDescription) (StatusCode: $($PlexWeb.exception.Response.StatusCode.value__))"}
-                    }
-                    else{
-                        if(-not $Silent){Write-Host "Unknown Response. Message: $($PlexWeb.exception.Response.StatusDescription) (Error: $($PlexWeb.exception.Response.StatusCode.value__)" -ForegroundColor Red}
-                    }
-                }
-            }elseif($PlexWeb[0].MediaContainer){
+            if($PlexWeb[0].MediaContainer){
                 if(-not $Silent){Write-Host "Available" -ForegroundColor Cyan}
                 if($PlexWeb[0].MediaContainer){
-                    if(-not $Silent){Write-Host "`t Version: $($PlexWeb[0].MediaContainer.version)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "`t Version: $($PlexWeb[0].MediaContainer.version.Split('-')[0]) ($($PlexWeb[0].MediaContainer.version.Split('-')[1]))" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t Friendly Name: $($PlexWeb[0].MediaContainer.friendlyName)" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t PlexUsername: $($PlexWeb[0].MediaContainer.myPlexUserName)" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t Signin State: $($PlexWeb[0].MediaContainer.myPlexSigninState)" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t Platform: $($PlexWeb[0].MediaContainer.platform)" -ForegroundColor Cyan}
                     if(-not $Silent){Write-Host "`t Platform Version: $($PlexWeb[0].MediaContainer.platformVersion)" -ForegroundColor Cyan}
                     if($PlexWeb[0].MediaContainer.myPlexSubscription -eq 1){
-                        if(-not $Silent){Write-Host "`t Plex Subscription: True" -ForegroundColor Cyan}
+                        if(-not $Silent){Write-Host "`t PlexPass: True" -ForegroundColor Cyan}
                         $PlexPassStatus="True"
                     }elseif($PlexWeb[0].MediaContainer.myPlexSubscription -eq 0){
-                        if(-not $Silent){Write-Host "`t Plex Subscription: False" -ForegroundColor Cyan}
+                        if(-not $Silent){Write-Host "`t PlexPass: False" -ForegroundColor Cyan}
                         $PlexPassStatus="False"
                     }else{
-                        if(-not $Silent){Write-Host "`t Plex Subscription: Unknown" -ForegroundColor Cyan}
+                        if(-not $Silent){Write-Host "`t PlexPass: Unknown" -ForegroundColor Cyan}
                     }
                 }else{
-                    if($LogFile){Write-Log -Message "Data missing from server response $PlexServer" -Path $LogFile -Level Warn}
+                    if($LogFile){Write-Log -Message "Data missing from server response $PlexServer" -Path $LogFile -Level Info}
                 }
-
             }else{
-                if($LogFile){Write-Log -Message "Plex Web is not responding from $PlexServerUri" -Path $LogFile -Level Warn}
+                if(-not $Silent){Write-Host "Unavailable" -ForegroundColor Red}
+                if($PlexWeb.Exception.Response){
+                    if($LogFile){Write-Log -Message "Plex Web unavailable at $PlexServerUri. Message: $($PlexWeb.Exception.Message) (Error: $($PlexWeb.Exception.HResult)) StatusDescription: $($PlexWeb.exception.Response.StatusDescription) (StatusCode: $($PlexWeb.Exception.Response.StatusCode.value__))" -Path $LogFile -Level Info}
+                    if(-not $Silent){Write-Host $PlexWeb.exception.message -ForegroundColor Red}
+                    switch($PlexWeb.Exception.Response.StatusCode.value__){
+                        401{
+                            if(-not $Silent){Write-Host "Username and/or password incorrect or invalid Plex Authentication token povided. StatusDescription: $($PlexWeb.Exception.Response.StatusDescription) (StatusCode: $($PlexWeb.Exception.Response.StatusCode.value__))"}
+                        }
+                        201{
+                            if(-not $Silent){Write-Host "Failed to log in. StatusDescription: $($PlexWeb.Exception.Response.StatusDescription) (StatusCode: $($PlexWeb.Exception.Response.StatusCode.value__))"}
+                        }
+                        else{
+                            if(-not $Silent){Write-Host "Unknown Response. Message: $($PlexWeb.Exception.Response.StatusDescription) (Error: $($PlexWeb.Exception.Response.StatusCode.value__)" -ForegroundColor Red}
+                        }
+                    }
+                }else{
+                    if($LogFile){Write-Log -Message "Plex Media Server unavailable at $PlexServerUri" -Path $LogFile -Level Info}
+                }
             }
 
             if($SlackNotify){
@@ -1155,7 +1205,7 @@ Run Passive and update using Server Online Authentication Token.
                     if($LogFile){Write-Log -Message "Slack Notification sent successsfully." -Path $LogFile -Level Info}
                     if(-not $Silent){Write-Host "Sent" -ForegroundColor Cyan}
                 }else{
-                    if($LogFile){Write-Log -Message "Error sending Slack Notification. Error $($slackResponse.error)" -Path $LogFile -Level Error}
+                    if($LogFile){Write-Log -Message "Error sending Slack Notification. Error $($slackResponse.error)" -Path $LogFile -Level Info}
                     if(-not $Silent){Write-Host "Error Sending" -ForegroundColor Red}
                 }
             }
@@ -1182,7 +1232,7 @@ Run Passive and update using Server Online Authentication Token.
                         if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                         if(-not $Silent){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
-                        if($LogFile){Write-Log -Message "Error sending Email Notification" -Path $LogFile -Level Error}
+                        if($LogFile){Write-Log -Message "Error sending Email Notification" -Path $LogFile -Level Info}
                         if(-not $Silent){Write-Host "Error Sending" -ForegroundColor Red}
                     }
                 }else{
@@ -1193,22 +1243,19 @@ Run Passive and update using Server Online Authentication Token.
                             if($LogFile){Write-Log -Message "Email Notification sent successsfully." -Path $LogFile -Level Info}
                             if(-not $Silent){Write-Host "Sent" -ForegroundColor Cyan}
                     }else{
-                        if($LogFile){Write-Log -Message "Error sending Email Notification" -Path $LogFile -Level Error}
+                        if($LogFile){Write-Log -Message "Error sending Email Notification" -Path $LogFile -Level Info}
                         if(-not $Silent){Write-Host "Error Sending" -ForegroundColor Red}
                     }
                 }
             }
         }Catch{
-            if($LogFile){Write-Log -Message "Error occurred: $($_.Exception.Message)" -Path $LogFile -Level Error}
-            if ($Host.Name -eq 'Windows PowerShell ISE Host') {
-                throw $_
-            } else {
-                exit 1
-            }
+            if($LogFile){Write-Log -Message "Error occurred: $($_.Exception.Message)" -Path $LogFile -Level Info}
+            $Global:LASTEXITCODE=1
+            throw $_
         }finally{
             if($LogFile){Write-Log -Message "Update-PlexMediaServer Completed" -Path $LogFile -Level Info}
         }
-        if($NotifySuccess -and $UpdateSuccess){exit 10}else{exit 0}
+        if($NotifySuccess -and $UpdateSuccess){$Global:LASTEXITCODE=10}
     }
 }
 
@@ -1241,10 +1288,10 @@ function Get-PlexToken{
         [System.Management.Automation.Credential()]
         [ValidateScript({
             if($_ -is [System.Management.Automation.PSCredential]){
-                $True
+                $true
             }else{
                 $Script:Credential=Get-Credential -Credential $_ -Message "Enter your Plex.tv credentials:"
-                $True
+                $true
             }
         })]
 
@@ -1255,6 +1302,14 @@ function Get-PlexToken{
         [Switch]$Plex2FA,
 
     #
+    [parameter()]
+
+        [String]$Product='Get-PlexToken',
+    
+    [parameter()]
+
+        [String]$Version='v2.0.0',
+
     [parameter()]
 
         [Switch]$PassThru
@@ -1269,7 +1324,7 @@ function Get-PlexToken{
 
     [hashtable]$return=@{}
 
-    while($Credential -ne [System.Management.Automation.PSCredential]::Empty){
+    if($Credential -ne [System.Management.Automation.PSCredential]::Empty){
         $PlexLogin=$Credential.GetNetworkCredential().UserName
         $PlexPassword=$Credential.GetNetworkCredential().Password
     }
@@ -1296,8 +1351,8 @@ function Get-PlexToken{
 		$response = Invoke-RestMethod -Uri $URL_LOGIN -Method POST -Headers @{
             'Authorization'            = ("Basic {0}" -f ([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $PlexLogin, $PlexPassword)))));
             'X-Plex-Client-Identifier' = "PowerShell";
-            'X-Plex-Product'           = 'Get-PlexToken';
-            'X-Plex-Version'           = "2.0.0";
+            'X-Plex-Product'           = $Product;
+            'X-Plex-Version'           = $Version;
             'X-Plex-Username'          = $PlexLogin;
 		} -ErrorAction Stop
 
