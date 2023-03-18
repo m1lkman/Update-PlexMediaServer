@@ -629,7 +629,7 @@ Run Passive and update using Server Online Authentication Token.
             if($PlexService -and $PlexMediaServerRunning){
                 if($PlexService.status -ne 'Stopped'){
                     if($LogFile){Write-Log -Message "Found Plex Media Server Service Wrapper (PlexService) Running." -Path $LogFile -Level Info}
-                    if($PlexService | Stop-Service -ErrorAction SilentlyContinue -PassThru){
+                    if($PlexService | Stop-Service -ErrorAction SilentlyContinue | Out-Null){
                         if($LogFile){Write-Log -Message "Sent Plex Media Server Service Wrapper (PlexService) Stop-Service." -Path $LogFile -Level Info}
                     }else{
                         if($LogFile){Write-Log -Message "Error sending Plex Media Server Service Wrapper (PlexService) Stop-Process." -Path $LogFile -Level Info}
