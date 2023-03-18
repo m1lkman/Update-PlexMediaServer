@@ -317,7 +317,7 @@ Run Passive and update using Server Online Authentication Token.
                         if($LogFile){Write-Log -Message "Plex Media Server Executable found in $($PlexMediaServerKey.InstallFolder)" -Path $LogFile -Level Info}
                         $InstallPath=(Split-Path -Path $PlexMediaServerExe)
                         if($LogFile){Write-Log -Message "InstallPath: $InstallPath" -Path $LogFile -Level Info}
-                        $installedVersion,$installedBuild = $PlexMediaServerExe.VersionInfo.ProductVersion.Split('-')
+                        $InstalledVersion,$InstalledBuild = $PlexMediaServerExe.VersionInfo.ProductVersion.Split('-')
                         if($LogFile){Write-Log -Message "Version: $installedVersion ($installedBuild)" -Path $LogFile -Level Info}
                         if((Get-FileBitness $PlexMediaServerExe.FullName) -eq 'I386'){
                             $CurrentBuild='windows-x86'
@@ -404,9 +404,10 @@ Run Passive and update using Server Online Authentication Token.
 
             if(-not $Silent){Write-Host "...Installation Path: $InstallPath" -ForegroundColor Cyan}
             if(-not $Silent){Write-Host "...LocalAppData Path: $LocalAppDataPath" -ForegroundColor Cyan}
-            if(-not $Silent){Write-Host "...User Context: $UserName" -ForegroundColor Cyan}
+            if(-not $Silent){Write-Host "...Version: $InstalledVersion ($InstalledBuild)" -ForegroundColor Cyan}
             if(-not $Silent){Write-Host "...Build: $CurrentBuild" -ForegroundColor Cyan}
             if(-not $Silent){Write-Host "...Update Channel: $ButlerUpdateChannel" -ForegroundColor Cyan}
+            if(-not $Silent){Write-Host "...User Context: $UserName" -ForegroundColor Cyan}
             if(-not $Silent){Write-Host "...Authentication Token: Validated" -ForegroundColor Cyan}
 
             #Check Plex Media Server Service (PlexService)
@@ -494,20 +495,20 @@ Run Passive and update using Server Online Authentication Token.
 
             #Check if Update already downloaded and has valid checksum
             if($LogFile){Write-Log -Message "Checking default local application data path ($LocalAppDataPath) for Updates" -Path $LogFile -Level Info}                
-            if((Test-Path -Path "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe") -and `
-            ((Get-FileHash "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe" -Algorithm SHA1).Hash -ieq $releaseChecksum)){
-                if($LogFile){Write-Log -Message "Latest update file found with matching checksum ($LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe)" -Path $LogFile -Level Info}
+            if((Test-Path -Path "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe") -and `
+            ((Get-FileHash "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe" -Algorithm SHA1).Hash -ieq $releaseChecksum)){
+                if($LogFile){Write-Log -Message "Latest update file found with matching checksum ($LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe)" -Path $LogFile -Level Info}
             }else{
                 if(-not $Silent){Write-Host "Downloading Update" -ForegroundColor Cyan}
                 #create destination directory if not present
                 if(-Not (Test-Path -Path "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild")){New-Item "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild" -ItemType directory | Out-Null}
-                if(Test-Path -Path "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe"){
-                    if($LogFile){Write-Log -Message "Latest update file ($LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe) found but failed checksum. Re-downloading." -Path $LogFile -Level Info}
+                if(Test-Path -Path "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe"){
+                    if($LogFile){Write-Log -Message "Latest update file ($LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe) found but failed checksum. Re-downloading." -Path $LogFile -Level Info}
                 }else{
                     if($LogFile){Write-Log -Message "Downloading Plex Media Server for Windows ($releaseVersion-$releaseBuild)" -Path $LogFile -Level Info}
                 }
-                if([int](Invoke-WebRequest -Headers $headers -Uri $releaseUrl -UseBasicParsing -OutFile "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe" -PassThru -OutVariable response).StatusCode -eq 200){
-                    if($LogFile){Write-Log -Message "Download of $LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe completed. StatusCode: $([int]$response.StatusCode)" -Path $LogFile -Level Info}
+                if([int](Invoke-WebRequest -Headers $headers -Uri $releaseUrl -UseBasicParsing -OutFile "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe" -PassThru -OutVariable response).StatusCode -eq 200){
+                    if($LogFile){Write-Log -Message "Download of $LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe completed. StatusCode: $([int]$response.StatusCode)" -Path $LogFile -Level Info}
                     if(-not $Silent){Write-Host "...completed" -ForegroundColor Cyan}
                     Write-Verbose "WebRequest result $([int]$response.StatusCode)"
                 }else{
@@ -516,9 +517,9 @@ Run Passive and update using Server Online Authentication Token.
                     $Global:LASTEXITCODE=4
                     break
                 }
-                if((Get-FileHash "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe" -Algorithm SHA1).Hash -ieq $releaseChecksum){
+                if((Get-FileHash "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe" -Algorithm SHA1).Hash -ieq $releaseChecksum){
                     if(-not $Silent){Write-Host "...checksum validated" -ForegroundColor Cyan}
-                    if($LogFile){Write-Log -Message "Validated checksum ($LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe)" -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Validated checksum ($LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe)" -Path $LogFile -Level Info}
                 }else{
                     if($LogFile){Write-Log -Message "Exiting: Error downloading $releaseUrl. Checksum invalid." -Path $LogFile -Level Error}
                     throw "Exiting: Error downloading $releaseUrl. Checksum invalid."
@@ -692,7 +693,7 @@ Run Passive and update using Server Online Authentication Token.
                     if($passive){
                         $ArgumentList = "/NORESTART /RESTARTEXITCODE=3010 /SILENT /SUPPRESSMSGBOXES"
                     }elseif($Silent){
-                        $ArgumentList = "/NORESTART /RESTARTEXITCODE=3010 /SUPPRESSMSGBOXES /VERYSILENT "
+                        $ArgumentList = "/NORESTART /RESTARTEXITCODE=3010 /SUPPRESSMSGBOXES /VERYSILENT"
                     }else{
                         $ArgumentList = "/NORESTART /RESTARTEXITCODE=3010"
                     }
@@ -702,9 +703,17 @@ Run Passive and update using Server Online Authentication Token.
             if($CurrentBuild -eq 'windows-x86_64' -and $build -eq 'windows-x86'){
                 if($LogFile){Write-Log -Message "Uninstalling Plex Media Server (x64) before installing 'windows-x86' build" -Path $LogFile -Level Info}
 
+                if($passive){
+                    $UninstallArgumentList = "/NORESTART /RESTARTEXITCODE=3010 /SILENT /SUPPRESSMSGBOXES"
+                }elseif($Silent){
+                    $UninstallArgumentList = "/NORESTART /RESTARTEXITCODE=3010 /SUPPRESSMSGBOXES /VERYSILENT"
+                }else{
+                    $UninstallArgumentList = "/NORESTART /RESTARTEXITCODE=3010"
+                }
+
                 foreach($UninstallString in $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayName -like 'Plex Media Server*'}).UninstallString){
-                    if($LogFile){Write-Log -Message "Uninstalling Plex Media Server (x64) update Process: $UninstallString $ArgumentList" -Path $LogFile -Level Info}
-                    $Process = Start-Process -FilePath $UninstallString -ArgumentList $ArgumentList -PassThru
+                    if($LogFile){Write-Log -Message "Uninstalling Plex Media Server (x64) update Process: $UninstallString $UninstallArgumentList" -Path $LogFile -Level Info}
+                    $Process = Start-Process -FilePath $UninstallString -ArgumentList $UninstallArgumentList -PassThru
                     While(Get-Process -Id $Process.Id -ErrorAction SilentlyContinue){
                         Start-Sleep -Seconds 4
                         if(-not $Silent){Write-Host "." -ForegroundColor Cyan -NoNewline}
@@ -730,13 +739,13 @@ Run Passive and update using Server Online Authentication Token.
                     }
                     Default {
                         if(-not $Silent){Write-Host "Uninstalling Plex Media Server (x64): Error" -ForegroundColor Red}
-                        if($LogFile){Write-Log -Message "Plex Media Server failed to uninstall. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}    
+                        if($LogFile){Write-Log -Message "Plex Media Server failed to uninstall. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}    
                     }
                 }
             }
 
-            if($LogFile){Write-Log -Message "Starting Plex Media Server update Process: $LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList" -Path $LogFile -Level Info}
-            $Process = Start-Process -FilePath "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe" -ArgumentList $ArgumentList -PassThru
+            if($LogFile){Write-Log -Message "Starting Plex Media Server update Process: $LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe $ArgumentList" -Path $LogFile -Level Info}
+            $Process = Start-Process -FilePath "$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe" -ArgumentList $ArgumentList -PassThru
             While(Get-Process -Id $Process.Id -ErrorAction SilentlyContinue){
                 if(-not $Silent){Write-Host "." -ForegroundColor Cyan -NoNewline}
                 Start-Sleep -Seconds 4
@@ -851,7 +860,7 @@ Run Passive and update using Server Online Authentication Token.
                 Default {
                     [bool]$UpdateSuccess=$false
                     if(-not $Silent){Write-Host "Installation: ERROR" -ForegroundColor Red}
-                    if($LogFile){Write-Log -Message "Update failed to install. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}
+                    if($LogFile){Write-Log -Message "Update failed to install. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild-$($Build.Replace('Windows-','')).exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}
                 }
             }
 
