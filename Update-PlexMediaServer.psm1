@@ -315,7 +315,7 @@ Run Passive and update using Server Online Authentication Token.
                     #Find Install Path
                     if(Get-ItemProperty "$($PlexMediaServerKey.InstallFolder)\Plex Media Server.exe" -OutVariable PlexMediaServerExe -ErrorAction SilentlyContinue){
                         if($LogFile){Write-Log -Message "Plex Media Server Executable found in $($PlexMediaServerKey.InstallFolder)" -Path $LogFile -Level Info}
-                        $InstallPath=($PlexMediaServerKey.InstallFolder).Substring(0,($PlexMediaServerKey.InstallFolder).Length-1)
+                        $InstallPath=(Split-Path -Path $PlexMediaServerExe)
                         if($LogFile){Write-Log -Message "InstallPath: $InstallPath" -Path $LogFile -Level Info}
                         $installedVersion,$installedBuild = $PlexMediaServerExe.VersionInfo.ProductVersion.Split('-')
                         if($LogFile){Write-Log -Message "Version: $installedVersion ($installedBuild)" -Path $LogFile -Level Info}
@@ -618,7 +618,11 @@ Run Passive and update using Server Online Authentication Token.
                 if(-not $Silent){Write-Host "...unable to determine active Session(s), plex web unavailable or unreachable" -ForegroundColor Cyan}
             }
 
-            if(-not $Silent){Write-Host "Starting Update Process" -ForegroundColor Cyan}
+            if($Force){
+                if(-not $Silent){Write-Host "Starting Update Process (Forced)" -ForegroundColor Cyan}
+            }else{
+                if(-not $Silent){Write-Host "Starting Update Process" -ForegroundColor Cyan}
+            }
 
             #Stop Plex Media Server Service Wrapper (PlexService)
             if($PlexService -and $PlexMediaServerRunning){
@@ -696,7 +700,6 @@ Run Passive and update using Server Online Authentication Token.
             }
 
             if($CurrentBuild -eq 'windows-x86_64' -and $build -eq 'windows-x86'){
-                if(-not $Silent){Write-Host "Uninstalling Plex Media Server (x64)..." -ForegroundColor Cyan -NoNewline}
                 if($LogFile){Write-Log -Message "Uninstalling Plex Media Server (x64) before installing 'windows-x86' build" -Path $LogFile -Level Info}
 
                 foreach($UninstallString in $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayName -like 'Plex Media Server*'}).UninstallString){
@@ -710,25 +713,23 @@ Run Passive and update using Server Online Authentication Token.
 
                 switch ($Process.ExitCode) {
                     0 {
-                        if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
-                        if(-not $Silent){Write-Host "...Restart Required: False" -ForegroundColor Cyan}
+                        if(-not $Silent){Write-Host "Uninstalling Plex Media Server (x64): Success" -ForegroundColor Cyan}
                         if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode)." -Path $LogFile -Level Info}    
                     }
                     2 {
-                        if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                        if(-not $Silent){Write-Host "Uninstalling Plex Media Server (x64): Cancelled" -ForegroundColor Red}
                         if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}    
                     }
                     1602 {
-                        if(-not $Silent){Write-Host "Cancelled" -ForegroundColor Red}
+                        if(-not $Silent){Write-Host "Uninstalling Plex Media Server (x64): Cancelled" -ForegroundColor Red}
                         if($LogFile){Write-Log -Message "Plex Media Server uninstall was cancelled by user. ExitCode: $($Process.ExitCode)." -Path $LogFile -Level Info}    
                     }
                     3010 {
-                        if(-not $Silent){Write-Host "Success" -ForegroundColor Cyan}
-                        if(-not $Silent){Write-Host "...Restart required: True" -ForegroundColor Cyan}
+                        if(-not $Silent){Write-Host "Uninstalling Plex Media Server (x64): Success (Restart Required)" -ForegroundColor Cyan}
                         if($LogFile){Write-Log -Message "Successfully uninstalled with ExitCode $($Process.ExitCode). Restart Required." -Path $LogFile -Level Info}    
                     }
                     Default {
-                        if(-not $Silent){Write-Host "Error" -ForegroundColor Red}
+                        if(-not $Silent){Write-Host "Uninstalling Plex Media Server (x64): Error" -ForegroundColor Red}
                         if($LogFile){Write-Log -Message "Plex Media Server failed to uninstall. Command '$LocalAppDataPath\Plex Media Server\Updates\$releaseVersion-$releaseBuild\Plex-Media-Server-$releaseVersion-$releaseBuild.exe $ArgumentList' returned error code $($Process.ExitCode))." -Path $LogFile -Level Info}    
                     }
                 }
