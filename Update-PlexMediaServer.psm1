@@ -475,7 +475,7 @@ Run Passive and update using Server Online Authentication Token.
             }else{
                 if($LogFile){Write-Log -Message "Version up-to-date. Available Update version ($releaseVersion) equal to installed version ($installedVersion)." -Path $LogFile -Level Info}
                 if($Force){
-                    if(-not $Silent){Write-Host "...latest Version $installedVersion already installed. (-Force install enabled)" -ForegroundColor Cyan}
+                    if(-not $Silent){Write-Host "...latest Version $installedVersion already installed." -ForegroundColor Cyan}
                     $UpdateRequired=$true
                     $ArgumentList = "/repair" 
                     if($LogFile){Write-Log -Message "Proceeding with update. Force update enabled." -Path $LogFile -Level Info}
