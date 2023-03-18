@@ -6,12 +6,10 @@ Windows PowerShell module for automating Plex Media Server updates when running 
   * Windows Server 2012R2 or later with PowerShell 5.0 or later
  
   Plex Media Server (https://www.plex.tv/downloads/)
-  * 1.7 or later (windows-x86)
-  * 1.29 or later (windows-x86_64)
+  * 1.29 or later
 
   Cjmurph's [Plex Media Server Service Wrapper](https://github.com/cjmurph/PmsService)
-  * 1.0.3 or later for PMS windows-x86 builds
-  * 1.2.1 or later for PMS windows-x86_64 builds
+  * 1.2.1 or later
   
 # Installing Update-PlexMediaServer
 ## 1. Download Module
