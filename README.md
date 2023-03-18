@@ -2,8 +2,8 @@
 Windows PowerShell module for automating Plex Media Server updates when running with Cjmurph's Plex Media Server Service Wrapper. This module automates checking for the latest Plex Media Server public or beta channel (PlexPass) versions, checking if the server is "in-use", downloading the update, stopping services/processes, installing the update, and restarting services. Supports interactive or silent execution (for automation), with logging, and notifications. Authentication is performed against Plex.tv server using either Plex Authentication Tokens (User or Server) or Plex.tv credentials.
 ### Prerequisites
   Supported Operating Systems with supported PowerShell version.
-  * Windows 7/Windows Server 2008 with PowerShell 4.0 or later
-  * Windows 8/10/11/Windows Server 2012/2016/2019/2022 with PowerShell 5.0 or later
+  * Windows 8 or later with PowerShell 5.0 or later
+  * Windows Server 2012R2 or later with PowerShell 5.0 or later
  
   Plex Media Server (https://www.plex.tv/downloads/)
   * 1.7 or later (windows-x86)
